@@ -1,5 +1,13 @@
 # ZTop - Terminal System Monitor
 
+﻿<img width="2106" height="1356" alt="image" src="https://github.com/user-attachments/assets/101fa69d-f266-4f77-9398-60a55bfb5138" />
+ 
+Requirements: `brew install tmux htop mactop ctop`
+
+Start: `./ztop.sh`
+
+---
+
 A terminal application that displays system monitoring tools in a 4-pane layout:
 
 - **Top Left**: htop sorted by CPU usage
