@@ -199,6 +199,101 @@ test_function_definitions() {
     fi
 }
 
+# Test 9: htop_mem_clean functionality
+test_htop_mem_clean() {
+    log_test "Testing htop_mem_clean functionality"
+    
+    if ! command -v tmux &> /dev/null; then
+        warn "Skipping htop_mem_clean test - tmux not available"
+        return
+    fi
+    
+    if ! command -v htop &> /dev/null; then
+        warn "Skipping htop_mem_clean test - htop not available"
+        return
+    fi
+    
+    # Check that htop_mem_clean uses the same command as htop_mem
+    local htop_mem_cmd=$(grep '"htop_mem") echo' "$ZTOP_SCRIPT" | sed 's/.*echo "\([^"]*\)".*/\1/')
+    local htop_mem_clean_cmd=$(grep '"htop_mem_clean") echo' "$ZTOP_SCRIPT" | sed 's/.*echo "\([^"]*\)".*/\1/')
+    
+    if [[ "$htop_mem_cmd" == "$htop_mem_clean_cmd" ]]; then
+        pass "htop_mem_clean uses same command as htop_mem ($htop_mem_cmd)"
+    else
+        fail "htop_mem_clean command differs from htop_mem. Expected: '$htop_mem_cmd', Got: '$htop_mem_clean_cmd'"
+    fi
+    
+    # Check that the script contains the # keystroke logic for htop_mem_clean
+    if grep -q 'tmux send-keys.*#' "$ZTOP_SCRIPT"; then
+        pass "htop_mem_clean includes # keystroke logic"
+    else
+        fail "htop_mem_clean missing # keystroke logic"
+    fi
+}
+
+# Test 10: Layout verification test
+test_layout_verification() {
+    log_test "Testing tmux layout structure and pane arrangement"
+    
+    if ! command -v tmux &> /dev/null; then
+        warn "Skipping layout verification test - tmux not available"
+        return
+    fi
+    
+    # Create a test session with the same layout logic as ztop_compat.sh
+    local test_session="ztop_layout_test"
+    
+    # Clean up any existing test session
+    tmux kill-session -t "$test_session" 2>/dev/null || true
+    
+    # Create session and layout
+    tmux new-session -d -s "$test_session" -x 120 -y 40
+    
+    # Apply the same layout creation logic as ztop_compat.sh
+    tmux split-window -h -p 50 -t "$test_session:0.0"                  # Split into left/right halves  
+    tmux split-window -v -p 50 -t "$test_session:0.0"                  # Split left into top/bottom
+    tmux split-window -v -p 67 -t "$test_session:0.2"                  # Split right into top 33% and bottom 67%
+    tmux split-window -v -p 50 -t "$test_session:0.3"                  # Split bottom 67% into two 33% parts
+    
+    # Get pane information
+    local pane_count=$(tmux list-panes -t "$test_session" 2>/dev/null | wc -l | tr -d ' ')
+    
+    if [[ "$pane_count" -eq 5 ]]; then
+        pass "Layout created with correct number of panes (5)"
+    else
+        fail "Layout created with incorrect pane count: $pane_count (expected 5)"
+        tmux kill-session -t "$test_session" 2>/dev/null
+        return
+    fi
+    
+    # Get detailed pane layout information
+    local layout_info=$(tmux list-panes -t "$test_session" -F "#{pane_index}:#{pane_left},#{pane_top},#{pane_width}x#{pane_height}" 2>/dev/null)
+    
+    echo "Pane layout details:"
+    echo "$layout_info"
+    
+    # Parse pane positions to verify layout structure
+    local pane0_info=$(echo "$layout_info" | grep "^0:")
+    local pane1_info=$(echo "$layout_info" | grep "^1:")
+    local pane2_info=$(echo "$layout_info" | grep "^2:")
+    
+    # Extract left positions
+    local pane0_left=$(echo "$pane0_info" | sed 's/.*:\([0-9]*\),.*/\1/')
+    local pane1_left=$(echo "$pane1_info" | sed 's/.*:\([0-9]*\),.*/\1/')
+    local pane2_left=$(echo "$pane2_info" | sed 's/.*:\([0-9]*\),.*/\1/')
+    
+    # Verify panes 0 and 1 are on the left side (left=0) and pane 2 is on the right side (left>0)
+    if [[ "$pane0_left" -eq 0 && "$pane1_left" -eq 0 && "$pane2_left" -gt 0 ]]; then
+        pass "Layout structure correct: panes 0,1 on left; panes 2,3,4 on right"
+    else
+        fail "Layout structure incorrect: pane0_left=$pane0_left, pane1_left=$pane1_left, pane2_left=$pane2_left"
+        echo "Expected: panes 0,1 left=0 (left side), pane 2+ left>0 (right side)"
+    fi
+    
+    # Clean up
+    tmux kill-session -t "$test_session" 2>/dev/null
+}
+
 # Main test runner
 run_all_tests() {
     echo -e "${BLUE}=== ZTop Compatibility Test Suite ===${NC}"
@@ -217,6 +312,8 @@ run_all_tests() {
     test_kill_session
     test_bash_compatibility
     test_function_definitions
+    test_htop_mem_clean
+    test_layout_verification
     
     teardown_test
     

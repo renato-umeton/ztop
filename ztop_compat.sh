@@ -54,7 +54,7 @@ find_tool() {
     local tool_name="$1"
     
     # Extract base tool name (remove suffixes like _cpu, _mem, _clean)
-    local base_tool=$(echo "$tool_name" | sed 's/_cpu$//' | sed 's/_mem$//' | sed 's/_clean$//' | sed 's/_mem_clean$//')
+    local base_tool=$(echo "$tool_name" | sed 's/_mem_clean$//' | sed 's/_cpu$//' | sed 's/_mem$//' | sed 's/_clean$//')
     
     if command_exists "$base_tool"; then
         echo "$base_tool"
@@ -130,7 +130,7 @@ check_dependencies() {
     
     for tool_name in "${tools[@]}"; do
         # Extract base tool name and avoid duplicates
-        local base_tool=$(echo "$tool_name" | sed 's/_cpu$//' | sed 's/_mem$//')
+        local base_tool=$(echo "$tool_name" | sed 's/_mem_clean$//' | sed 's/_cpu$//' | sed 's/_mem$//' | sed 's/_clean$//')
         
         # Skip if we already checked this base tool
         local already_checked=false
@@ -204,26 +204,29 @@ create_session() {
     
     # Create custom 5-pane stacked layout: 2 panes on left, 3 on right
     
-    # Split horizontally to create left and right columns (50%/50%)
-    tmux split-window -h -p 50 -t "$SESSION_NAME:0"
+    # Step 1: Split horizontally to create left and right halves (50%/50%)
+    tmux split-window -h -p 50 -t "$SESSION_NAME:0.0"
+    # Now we have: pane 0 (left half), pane 1 (right half)
     
-    # Split LEFT column: htop CPU (50%) and htop MEM (50%)
+    # Step 2: Split LEFT half vertically into 2 panes
     tmux split-window -v -p 50 -t "$SESSION_NAME:0.0"
+    # Now we have: pane 0 (left-top), pane 1 (left-bottom), pane 2 (right half)
     
-    # Split RIGHT column: mactop (50%) and bottom section (50%)
-    tmux split-window -v -p 50 -t "$SESSION_NAME:0.1" 
+    # Step 3: Split RIGHT half vertically into 3 panes
+    tmux split-window -v -p 67 -t "$SESSION_NAME:0.2"  # Split right into top 33% and bottom 67%
+    # Now we have: pane 0 (left-top), pane 1 (left-bottom), pane 2 (right-top), pane 3 (right-bottom-67%)
     
-    # Split the bottom-right section: ctop (30% of bottom = 15% total) and nethogs (70% of bottom = 35% total)
-    tmux split-window -v -p 30 -t "$SESSION_NAME:0.2"
+    tmux split-window -v -p 50 -t "$SESSION_NAME:0.3"  # Split the bottom 67% into two 33% parts
+    # Final: pane 0 (left-top), pane 1 (left-bottom), pane 2 (right-top), pane 3 (right-middle), pane 4 (right-bottom)
     
     # Final pane arrangement:
-    # 0: left-top (htop CPU) - 50% of left column
-    # 1: left-bottom (htop MEM clean) - 50% of left column  
-    # 2: right-top (mactop) - 50% of right column
-    # 3: right-middle (ctop) - 15% of total vertical space
-    # 4: right-bottom (nethogs) - 35% of total vertical space
+    # 0: left-top (htop CPU) - 50% of left column (25% of total)
+    # 1: left-bottom (htop MEM clean) - 50% of left column (25% of total)
+    # 2: right-top (mactop) - 33% of right column (16.5% of total)
+    # 3: right-middle (ctop) - 33% of right column (16.5% of total)
+    # 4: right-bottom (nethogs) - 33% of right column (16.5% of total)
     
-    log "Created 5-pane stacked layout: Left[CPU+MEM] | Right[mactop(50%)+ctop(15%)+nethogs(35%)]"
+    log "Created 5-pane stacked layout: Left[htop_cpu+htop_mem_clean] | Right[mactop+ctop+nethogs]"
     
     # Set pane titles
     tmux set -g pane-border-status top
@@ -269,32 +272,14 @@ launch_tools() {
             # Launch the tool
             tmux send-keys -t "$SESSION_NAME:0.$pane" "$command" Enter
             
-            # Special configuration for htop_mem_clean - hide CPU/memory bars
+            # Special configuration for htop_mem_clean - hide graph meter
             if [[ "$tool_name" == "htop_mem_clean" ]]; then
-                log "Configuring htop to hide CPU/memory meters..."
+                log "Hiding htop graph meter..."
                 # Wait a moment for htop to start
                 sleep 2
                 
-                # Send keystrokes to configure htop:
-                # F2 = Setup, navigate to Meters configuration
-                tmux send-keys -t "$SESSION_NAME:0.$pane" 'F2'     # Enter setup
-                sleep 0.8
-                
-                # Navigate to the left column (Active Meters) and remove CPU/Memory meters
-                # Press Left arrow to ensure we're in the left column
-                tmux send-keys -t "$SESSION_NAME:0.$pane" 'Left'
-                sleep 0.3
-                
-                # Remove all meters from left column by pressing Delete repeatedly
-                # This will remove CPU, Memory, and other default meters
-                for i in {1..15}; do
-                    tmux send-keys -t "$SESSION_NAME:0.$pane" 'Delete'
-                    sleep 0.1
-                done
-                
-                # Save and exit setup
-                tmux send-keys -t "$SESSION_NAME:0.$pane" 'F10'    # Save and exit
-                sleep 0.5
+                # Send # to hide the graph meter and make it clean
+                tmux send-keys -t "$SESSION_NAME:0.$pane" '#'
             fi
             
         else
