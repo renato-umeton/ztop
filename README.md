@@ -48,13 +48,15 @@ The script will automatically:
 - Create a new tmux session named "ztop" with 5 optimized panes
 - Auto-attach to existing session if already running (no prompts)
 - Apply clean htop interface with hidden graph meters
+- Setup global `q` key shortcut to kill entire session from any pane
 - Check for required tools and exit if any are missing
 
 ## Features
 
 - **Fixed 5-pane layout** with optimized 50/50 split (2 panes left, 3 panes right)
 - **Clean htop interface** with automatic graph meter hiding using `#` keystroke
-- **Streamlined design** - 177 lines (56% reduction from original)
+- **Global quit shortcut** - press `q` from any pane to kill entire session instantly
+- **Streamlined design** - 180 lines (55% reduction from original)
 - **Auto session management** - no interactive prompts, automatic attach/create
 - **Bash 3.x+ compatibility** for older and newer macOS systems
 - **No fallback tools** - clean, predictable behavior requiring exact tools
@@ -68,8 +70,9 @@ Run the comprehensive test suite:
 ./test_ztop.sh
 ```
 
-**12 comprehensive tests** including:
+**13 comprehensive tests** including:
 - Layout verification with automated tmux pane position testing
+- Global 'q' key binding functionality testing
 - Simplified dependency checking validation
 - htop_mem_clean functionality with # keystroke validation
 - Integration tests for streamlined functionality verification

@@ -107,6 +107,8 @@ launch_tools() {
 configure_tmux() {
     tmux set -g mouse on
     tmux set -g status-right "ztop | %H:%M %d-%b-%y"
+    # Global 'q' key binding to kill the entire ztop session
+    tmux bind-key -n q kill-session -t "ztop"
 }
 
 # Help function
@@ -122,6 +124,9 @@ Options:
     -l, --list-tools    List available monitoring tools
 
 Layout: Left[htop CPU + htop MEM] | Right[mactop + ctop + nethogs]
+
+Shortcuts:
+    q                   Kill entire session (works from any pane)
 
 EOF
 }

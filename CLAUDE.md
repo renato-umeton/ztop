@@ -11,12 +11,12 @@ ZTop is a streamlined terminal application that creates a 5-pane layout displayi
 
 ### ZTop (`ztop.sh`) - Simplified Version
 - **Language**: Bash 3.x+ compatible
-- **Size**: 177 lines (56% reduction from original)
+- **Size**: 180 lines (55% reduction from original)
 - **UI Framework**: tmux for terminal multiplexing and pane management
 - **Process Management**: Direct command execution with hardcoded tool arrays
 - **Layout**: Fixed 5-pane layout with optimized 50/50 split
 - **Session Management**: Auto-attach to existing session or create new
-- **Special Features**: Clean htop interface with automatic graph meter hiding
+- **Special Features**: Clean htop interface + global `q` quit shortcut
 - **Design Philosophy**: Minimal, focused, no fallback tools required
 
 ## Key Files
@@ -59,10 +59,11 @@ The script will:
 ### Core Features
 - **Fixed 5-pane layout** with optimized 50/50 split (2 panes left, 3 panes right)
 - **Clean htop interface** with automatic graph meter hiding using `#` keystroke
+- **Global quit shortcut** - press `q` from any pane to kill entire session
 - **Streamlined dependency checking** - requires all tools, no alternatives
 - **Auto session management** - automatically attaches to existing or creates new
 - **Bash 3.x+ compatibility** for older and newer systems
-- **Minimal codebase** - 177 lines, 56% smaller than original
+- **Minimal codebase** - 180 lines, 55% smaller than original
 
 ### Technical Implementation
 - **Hardcoded tool arrays** - eliminates complex configuration logic
@@ -83,9 +84,10 @@ The script will:
 ## Testing
 
 ### Test Suite
-- **12 comprehensive tests** covering all functionality
+- **13 comprehensive tests** covering all functionality
 - **Layout verification** with automated tmux pane position testing
-- **Dependency checking** with tool alternatives validation
+- **Global 'q' key binding** functionality testing
+- **Dependency checking** with tool requirements validation
 - **Integration tests** for end-to-end functionality verification
 - **htop_mem_clean functionality** testing with # keystroke validation
 
