@@ -1,6 +1,6 @@
 # ZTop - Terminal System Monitor
  
-Requirements: `brew install tmux htop mactop ctop nethogs`
+**Requirements:** `brew install tmux htop mactop ctop nethogs`
 
 **Quick Start:** `./ztop.sh`
 
@@ -8,7 +8,9 @@ Requirements: `brew install tmux htop mactop ctop nethogs`
 
 ---
 
-A terminal application that displays system monitoring tools in an optimized 5-pane layout:
+A streamlined terminal application that displays system monitoring tools in a fixed 5-pane layout.
+
+**Simplified Design**: 177 lines of code (56% reduction) with no fallback tools or complex configuration.
 
 ## Layout (5 panes)
 - **Left Half**: htop CPU (top) and htop memory with clean interface (bottom)
@@ -16,7 +18,7 @@ A terminal application that displays system monitoring tools in an optimized 5-p
 
 ## Prerequisites
 
-### Required Tools
+### Required Tools (No Alternatives)
 - `tmux` - Terminal multiplexer
 - `htop` - Interactive process viewer
 - `mactop` - macOS activity monitor
@@ -27,6 +29,8 @@ A terminal application that displays system monitoring tools in an optimized 5-p
 ```bash
 brew install tmux htop mactop ctop nethogs
 ```
+
+**Important**: All tools are required. The simplified version does not provide fallback alternatives.
 
 ## Installation & Usage
 
@@ -42,18 +46,19 @@ brew install tmux htop mactop ctop nethogs
 
 The script will automatically:
 - Create a new tmux session named "ztop" with 5 optimized panes
-- Attach to existing session if already running
+- Auto-attach to existing session if already running (no prompts)
 - Apply clean htop interface with hidden graph meters
-- Check dependencies and suggest alternatives if tools are missing
+- Check for required tools and exit if any are missing
 
 ## Features
 
-- **Enhanced 5-pane layout** with optimized 50/50 split (2 panes left, 3 panes right)
+- **Fixed 5-pane layout** with optimized 50/50 split (2 panes left, 3 panes right)
 - **Clean htop interface** with automatic graph meter hiding using `#` keystroke
-- **Comprehensive dependency checking** with fallback alternatives (btop for mactop, etc.)
-- **Session persistence** with tmux (detach/reattach support)
+- **Streamlined design** - 177 lines (56% reduction from original)
+- **Auto session management** - no interactive prompts, automatic attach/create
 - **Bash 3.x+ compatibility** for older and newer macOS systems
-- **Graceful error handling** for missing tools with helpful suggestions
+- **No fallback tools** - clean, predictable behavior requiring exact tools
+- **Hardcoded tool arrays** - eliminates complex configuration logic
 
 ## Testing
 
@@ -65,14 +70,22 @@ Run the comprehensive test suite:
 
 **12 comprehensive tests** including:
 - Layout verification with automated tmux pane position testing
-- Dependency checking with tool alternatives validation
+- Simplified dependency checking validation
 - htop_mem_clean functionality with # keystroke validation
-- Integration tests for end-to-end functionality verification
+- Integration tests for streamlined functionality verification
 
-All tests pass successfully, ensuring reliable operation across different environments.
+All tests pass successfully, ensuring reliable operation with the simplified design.
 
 ## Requirements
 
 - **Bash 3.x+** (compatible with older and newer systems)
 - **tmux** terminal multiplexer
-- **Required monitoring tools** (htop, mactop, ctop, nethogs)
+- **All monitoring tools required** (htop, mactop, ctop, nethogs) - no alternatives
+
+## Design Philosophy
+
+This version prioritizes **simplicity and predictability** over flexibility:
+- **No fallback tools** - ensures consistent behavior across environments
+- **Hardcoded configuration** - eliminates complex logic and edge cases
+- **Minimal codebase** - easier to understand, maintain, and debug
+- **Direct execution** - streamlined flow without abstraction layers

@@ -1,7 +1,7 @@
 # ZTop - Terminal System Monitor
 
 ## Project Overview
-ZTop is a terminal application that creates a 5-pane layout displaying different system monitoring tools in a single terminal window:
+ZTop is a streamlined terminal application that creates a 5-pane layout displaying system monitoring tools in a single tmux session:
 
 ### Layout (5 panes)
 - **Left Half**: htop CPU (top) and htop memory with clean interface (bottom)
@@ -9,13 +9,15 @@ ZTop is a terminal application that creates a 5-pane layout displaying different
 
 ## Implementation
 
-### ZTop (`ztop.sh`)
+### ZTop (`ztop.sh`) - Simplified Version
 - **Language**: Bash 3.x+ compatible
+- **Size**: 177 lines (56% reduction from original)
 - **UI Framework**: tmux for terminal multiplexing and pane management
-- **Process Management**: Direct command execution in tmux panes
-- **Layout**: 5-pane layout with optimized 50/50 split (2 panes left, 3 panes right)
-- **Session Management**: Creates/attaches to named tmux session "ztop"
+- **Process Management**: Direct command execution with hardcoded tool arrays
+- **Layout**: Fixed 5-pane layout with optimized 50/50 split
+- **Session Management**: Auto-attach to existing session or create new
 - **Special Features**: Clean htop interface with automatic graph meter hiding
+- **Design Philosophy**: Minimal, focused, no fallback tools required
 
 ## Key Files
 - `ztop.sh` - Main bash implementation using tmux for pane management
@@ -25,17 +27,19 @@ ZTop is a terminal application that creates a 5-pane layout displaying different
 
 ## Dependencies
 
-### Required Tools
+### Required Tools (No Fallbacks)
 - `tmux` - Terminal multiplexer
 - `htop` - Interactive process viewer
-- `mactop` - macOS activity monitor (brew install mactop)
-- `ctop` - Container monitoring tool (brew install ctop)
+- `mactop` - macOS activity monitor
+- `ctop` - Container monitoring tool
 - `nethogs` - Network traffic monitor by process
 
 ### Install All Dependencies
 ```bash
 brew install tmux htop mactop ctop nethogs
 ```
+
+**Note**: All tools are required. The simplified version provides no fallback alternatives for missing tools.
 
 ## Usage
 
@@ -46,26 +50,35 @@ chmod +x ztop.sh
 
 The script will:
 - Create a new tmux session named "ztop" with 5 optimally arranged panes
-- Attach to existing session if already running
+- Auto-attach to existing session if already running
 - Use clean htop interface with hidden graph meters
-- Support dependency checking with fallback alternatives
+- Require all monitoring tools (no fallbacks)
 
 ## Features
 
 ### Core Features
-- **Enhanced 5-pane layout** with optimized 50/50 split (2 panes left, 3 panes right)
+- **Fixed 5-pane layout** with optimized 50/50 split (2 panes left, 3 panes right)
 - **Clean htop interface** with automatic graph meter hiding using `#` keystroke
-- **Comprehensive dependency checking** with fallback alternatives
-- **Session persistence** - can detach/reattach without losing state
+- **Streamlined dependency checking** - requires all tools, no alternatives
+- **Auto session management** - automatically attaches to existing or creates new
 - **Bash 3.x+ compatibility** for older and newer systems
-- **Tool alternatives detection** (btop for mactop, iftop for nethogs, etc.)
+- **Minimal codebase** - 177 lines, 56% smaller than original
 
 ### Technical Implementation
-- Simple tmux-based implementation for lightweight usage
-- Automatic session detection and reuse
-- Uses tmux's built-in pane management and layout system
-- Direct command execution in each pane for minimal overhead
-- Graceful error handling for missing tools
+- **Hardcoded tool arrays** - eliminates complex configuration logic
+- **Direct tmux commands** - no abstraction layers or complex functions
+- **Automatic session detection** and reuse without user prompts
+- **Essential functions only** - removed all unnecessary complexity
+- **No fallback tools** - clean, predictable behavior
+
+### Simplifications Made
+- Removed unused layout system (6 layouts → 1 fixed layout)
+- Eliminated complex dependency checking with duplicate detection
+- Removed all tool alternatives and fallback logic
+- Hardcoded session configuration instead of variables
+- Simplified session management (no interactive prompts)
+- Streamlined help and command-line options
+- Removed cleanup traps and complex error handling
 
 ## Testing
 
