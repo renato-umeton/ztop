@@ -79,7 +79,7 @@ create_session() {
 # Launch monitoring tools in panes
 launch_tools() {
     local tools=("htop_cpu" "htop_mem_clean" "mactop" "ctop" "nethogs")
-    local commands=("htop -s PERCENT_CPU" "htop -s PERCENT_MEM" "mactop" "ctop" "sudo nethogs")
+    local commands=("htop -s PERCENT_CPU" "htop -s PERCENT_MEM" "mactop" "ctop" "while true; do sudo nethogs; sleep 1; done")
     local titles=("htop (CPU)" "htop (MEM-clean)" "mactop" "ctop" "nethogs")
     
     for i in {0..4}; do
