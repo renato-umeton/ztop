@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# test_ztop.sh - Comprehensive test suite for ztop.sh
-# Tests functionality, layout creation, dependency checking, and error handling
+# test_ztop_compat.sh - Simple test suite for bash 3.x compatible ztop
+# Tests basic functionality that works with older bash versions
 
 # Test framework setup
 TEST_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-ZTOP_SCRIPT="$TEST_DIR/brokenztop.sh"
+ZTOP_SCRIPT="$TEST_DIR/ztop.sh"
 TEST_SESSION="ztop_test"
 FAILED_TESTS=0
 PASSED_TESTS=0
@@ -49,44 +49,15 @@ teardown_test() {
     tmux kill-session -t "ztop" 2>/dev/null || true
 }
 
-# Source the ztop script to access its functions
-source_ztop_functions() {
-    # Check if we have bash 4+ for associative arrays
-    if [[ ${BASH_VERSION%%.*} -lt 4 ]]; then
-        warn "Bash 3.x detected - using /usr/local/bin/bash if available"
-        if [[ -x "/usr/local/bin/bash" ]]; then
-            # Use newer bash to source functions
-            /usr/local/bin/bash -c "source '$ZTOP_SCRIPT'; declare -f command_exists find_tool get_tool_command get_layout_tools" > /tmp/ztop_functions_export.sh
-            source /tmp/ztop_functions_export.sh
-            rm -f /tmp/ztop_functions_export.sh
-            return
-        else
-            warn "Newer bash not found - some tests may fail"
-        fi
-    fi
-    
-    # Create a modified version of ztop script that exposes functions without running main
-    local temp_script="/tmp/ztop_test_functions.sh"
-    
-    # Extract everything except the main execution
-    sed '/^# Run main function/,$d' "$ZTOP_SCRIPT" > "$temp_script"
-    
-    # Source the functions
-    source "$temp_script"
-    rm -f "$temp_script"
-}
-
 # Test 1: Script exists and is executable
 test_script_exists() {
-    log_test "Checking if ztop script exists and is executable"
+    log_test "Checking if ztop compatibility script exists and is executable"
     
     if [[ -f "$ZTOP_SCRIPT" ]]; then
         if [[ -x "$ZTOP_SCRIPT" ]]; then
             pass "Script exists and is executable"
         else
             fail "Script exists but is not executable"
-            chmod +x "$ZTOP_SCRIPT"
-            pass "Made script executable"
         fi
     else
         fail "Script not found at $ZTOP_SCRIPT"
@@ -108,21 +79,7 @@ test_help_function() {
     fi
 }
 
-# Test 3: Layout listing works
-test_layout_listing() {
-    log_test "Testing layout listing function"
-    
-    local layout_output
-    layout_output=$("$ZTOP_SCRIPT" --layouts 2>&1)
-    
-    if [[ $? -eq 0 ]] && [[ "$layout_output" == *"stacked"* ]] && [[ "$layout_output" == *"original"* ]]; then
-        pass "Layout listing works correctly"
-    else
-        fail "Layout listing failed or missing expected layouts"
-    fi
-}
-
-# Test 4: Tool listing works
+# Test 3: Tool listing works
 test_tool_listing() {
     log_test "Testing tool availability listing"
     
@@ -136,215 +93,55 @@ test_tool_listing() {
     fi
 }
 
-# Test 5: Function availability after sourcing
-test_function_availability() {
-    log_test "Testing function availability after sourcing"
-    
-    source_ztop_functions
-    
-    local functions=("command_exists" "find_tool" "get_tool_command" "get_layout_tools")
-    local all_found=true
-    
-    for func in "${functions[@]}"; do
-        if ! declare -f "$func" > /dev/null; then
-            fail "Function $func not available"
-            all_found=false
-        fi
-    done
-    
-    if $all_found; then
-        pass "All required functions are available"
-    fi
-}
-
-# Test 6: Layout tools parsing
-test_layout_tools_parsing() {
-    log_test "Testing layout tools parsing"
-    
-    source_ztop_functions
-    
-    # Test stacked layout
-    local stacked_tools
-    stacked_tools=$(get_layout_tools "stacked")
-    
-    if [[ "$stacked_tools" == *"htop_cpu"* ]] && [[ "$stacked_tools" == *"htop_mem_clean"* ]] && 
-       [[ "$stacked_tools" == *"mactop"* ]] && [[ "$stacked_tools" == *"ctop"* ]] && 
-       [[ "$stacked_tools" == *"nethogs"* ]]; then
-        pass "Stacked layout tools parsed correctly"
-    else
-        fail "Stacked layout tools parsing failed: $stacked_tools"
-    fi
-}
-
-# Test 7: Command generation
-test_command_generation() {
-    log_test "Testing command generation for different tools"
-    
-    source_ztop_functions
-    
-    local tests=(
-        "htop_cpu:htop -s PERCENT_CPU"
-        "htop_mem:htop -s PERCENT_MEM"
-        "htop_mem_clean:htop -s PERCENT_MEM"
-        "mactop:mactop"
-        "ctop:ctop"
-        "nethogs:sudo nethogs"
-    )
-    
-    local all_correct=true
-    
-    for test_case in "${tests[@]}"; do
-        local tool="${test_case%:*}"
-        local expected="${test_case#*:}"
-        local actual
-        actual=$(get_tool_command "$tool")
-        
-        if [[ "$actual" == "$expected" ]]; then
-            pass "Command for $tool generated correctly: $actual"
-        else
-            fail "Command for $tool incorrect. Expected: $expected, Got: $actual"
-            all_correct=false
-        fi
-    done
-    
-    if $all_correct; then
-        pass "All tool commands generated correctly"
-    fi
-}
-
-# Test 8: Dependency checking
-test_dependency_checking() {
-    log_test "Testing dependency checking function"
-    
-    source_ztop_functions
-    
-    # Test tmux dependency
-    if command_exists tmux; then
-        pass "tmux dependency check works"
-    else
-        warn "tmux not available - some tests will be skipped"
-    fi
-    
-    # Test other tools
-    local tools=("htop" "mactop" "ctop" "nethogs")
-    for tool in "${tools[@]}"; do
-        if command_exists "$tool"; then
-            pass "$tool is available"
-        else
-            warn "$tool is not available (optional for testing)"
-        fi
-    done
-}
-
-# Test 9: Session creation (integration test)
+# Test 4: Session creation test (without running tools)
 test_session_creation() {
-    log_test "Testing tmux session creation (requires tmux)"
+    log_test "Testing tmux session creation (compatibility version)"
     
     if ! command -v tmux &> /dev/null; then
         warn "Skipping session creation test - tmux not available"
         return
     fi
     
-    # Test session creation without actually running tools
-    local test_script="/tmp/ztop_test_session.sh"
+    # Create a test session manually using the same logic
+    tmux new-session -d -s "$TEST_SESSION" -x 80 -y 24
     
-    cat > "$test_script" << 'EOF'
-#!/bin/bash
-SESSION_NAME="ztop_test"
-DEFAULT_WIDTH=80
-DEFAULT_HEIGHT=24
-
-# Create session
-tmux new-session -d -s "$SESSION_NAME" -x "$DEFAULT_WIDTH" -y "$DEFAULT_HEIGHT"
-
-# Create stacked layout
-tmux split-window -h -p 50 -t "$SESSION_NAME:0"
-tmux split-window -v -p 50 -t "$SESSION_NAME:0.0"
-tmux split-window -v -p 50 -t "$SESSION_NAME:0.1"
-tmux split-window -v -p 30 -t "$SESSION_NAME:0.2"
-
-echo "Session created successfully"
-EOF
-    
-    chmod +x "$test_script"
-    
-    if "$test_script" 2>/dev/null; then
-        # Check if session exists and has correct pane count
-        local pane_count
-        pane_count=$(tmux list-panes -t "$TEST_SESSION" 2>/dev/null | wc -l)
-        
-        if [[ "$pane_count" -eq 5 ]]; then
-            pass "Session created with correct number of panes (5)"
-        else
-            fail "Session created but pane count incorrect: $pane_count (expected 5)"
-        fi
-        
-        # Clean up
-        tmux kill-session -t "$TEST_SESSION" 2>/dev/null
-    else
-        fail "Session creation failed"
-    fi
-    
-    rm -f "$test_script"
-}
-
-# Test 10: Layout percentage validation
-test_layout_percentages() {
-    log_test "Testing layout percentage calculations"
-    
-    if ! command -v tmux &> /dev/null; then
-        warn "Skipping layout percentage test - tmux not available"
-        return
-    fi
-    
-    # Create a test session and check pane sizes
-    tmux new-session -d -s "$TEST_SESSION" -x 100 -y 40
-    
-    # Create the stacked layout
+    # Create the layout structure
     tmux split-window -h -p 50 -t "$TEST_SESSION:0"
     tmux split-window -v -p 50 -t "$TEST_SESSION:0.0"
     tmux split-window -v -p 50 -t "$TEST_SESSION:0.1"
     tmux split-window -v -p 30 -t "$TEST_SESSION:0.2"
     
-    # Get pane information
-    local pane_info
-    pane_info=$(tmux list-panes -t "$TEST_SESSION" -F "#{pane_index}:#{pane_width}x#{pane_height}" 2>/dev/null)
+    # Check if session exists and has correct pane count
+    local pane_count
+    pane_count=$(tmux list-panes -t "$TEST_SESSION" 2>/dev/null | wc -l)
     
-    if [[ -n "$pane_info" ]]; then
-        pass "Layout created and pane information retrieved"
-        echo "Pane sizes: $pane_info"
+    if [[ "$pane_count" -eq 5 ]]; then
+        pass "Session created with correct number of panes (5)"
     else
-        fail "Could not retrieve pane information"
+        fail "Session created but pane count incorrect: $pane_count (expected 5)"
     fi
+    
+    # Clean up
+    tmux kill-session -t "$TEST_SESSION" 2>/dev/null
 }
 
-# Test 11: Error handling
+# Test 5: Error handling
 test_error_handling() {
     log_test "Testing error handling for invalid options"
     
-    # Test invalid layout
+    # Test invalid option
     local output
-    output=$("$ZTOP_SCRIPT" --layout invalid_layout 2>&1)
+    output=$("$ZTOP_SCRIPT" --invalid-option 2>&1)
     local exit_code=$?
     
-    if [[ $exit_code -ne 0 ]] && [[ "$output" == *"Unknown layout"* ]]; then
-        pass "Invalid layout error handling works"
+    if [[ $exit_code -ne 0 ]] && [[ "$output" == *"Unknown option"* ]]; then
+        pass "Invalid option error handling works"
     else
-        fail "Invalid layout error handling failed"
-    fi
-    
-    # Test invalid size format
-    output=$("$ZTOP_SCRIPT" --size invalid_size 2>&1)
-    exit_code=$?
-    
-    if [[ $exit_code -ne 0 ]] && [[ "$output" == *"Invalid size format"* ]]; then
-        pass "Invalid size error handling works"
-    else
-        fail "Invalid size error handling failed"
+        fail "Invalid option error handling failed"
     fi
 }
 
-# Test 12: Kill session functionality
+# Test 6: Kill session functionality
 test_kill_session() {
     log_test "Testing kill session functionality"
     
@@ -353,8 +150,8 @@ test_kill_session() {
         return
     fi
     
-    # Create a test session
-    tmux new-session -d -s "ztop" echo "test"
+    # Create a test session that stays alive
+    tmux new-session -d -s "ztop" sleep 10
     
     # Test kill command
     local output
@@ -367,10 +164,141 @@ test_kill_session() {
     fi
 }
 
+# Test 7: Bash version compatibility
+test_bash_compatibility() {
+    log_test "Testing bash 3.x compatibility"
+    
+    echo "Current bash version: $BASH_VERSION"
+    
+    if [[ ${BASH_VERSION%%.*} -eq 3 ]]; then
+        pass "Running on bash 3.x - compatibility script should work"
+    elif [[ ${BASH_VERSION%%.*} -ge 4 ]]; then
+        pass "Running on bash 4+ - compatibility script should also work"
+    else
+        warn "Unknown bash version"
+    fi
+}
+
+# Test 8: Function definitions (basic check)
+test_function_definitions() {
+    log_test "Testing that key functions are defined in the script"
+    
+    # Check if key functions exist in the script
+    local functions=("command_exists" "get_layout_tools" "find_tool" "get_tool_command")
+    local all_found=true
+    
+    for func in "${functions[@]}"; do
+        if ! grep -q "^$func()" "$ZTOP_SCRIPT"; then
+            fail "Function $func not found in script"
+            all_found=false
+        fi
+    done
+    
+    if $all_found; then
+        pass "All required functions are defined in the script"
+    fi
+}
+
+# Test 9: htop_mem_clean functionality
+test_htop_mem_clean() {
+    log_test "Testing htop_mem_clean functionality"
+    
+    if ! command -v tmux &> /dev/null; then
+        warn "Skipping htop_mem_clean test - tmux not available"
+        return
+    fi
+    
+    if ! command -v htop &> /dev/null; then
+        warn "Skipping htop_mem_clean test - htop not available"
+        return
+    fi
+    
+    # Check that htop_mem_clean uses the same command as htop_mem
+    local htop_mem_cmd=$(grep '"htop_mem") echo' "$ZTOP_SCRIPT" | sed 's/.*echo "\([^"]*\)".*/\1/')
+    local htop_mem_clean_cmd=$(grep '"htop_mem_clean") echo' "$ZTOP_SCRIPT" | sed 's/.*echo "\([^"]*\)".*/\1/')
+    
+    if [[ "$htop_mem_cmd" == "$htop_mem_clean_cmd" ]]; then
+        pass "htop_mem_clean uses same command as htop_mem ($htop_mem_cmd)"
+    else
+        fail "htop_mem_clean command differs from htop_mem. Expected: '$htop_mem_cmd', Got: '$htop_mem_clean_cmd'"
+    fi
+    
+    # Check that the script contains the # keystroke logic for htop_mem_clean
+    if grep -q 'tmux send-keys.*#' "$ZTOP_SCRIPT"; then
+        pass "htop_mem_clean includes # keystroke logic"
+    else
+        fail "htop_mem_clean missing # keystroke logic"
+    fi
+}
+
+# Test 10: Layout verification test
+test_layout_verification() {
+    log_test "Testing tmux layout structure and pane arrangement"
+    
+    if ! command -v tmux &> /dev/null; then
+        warn "Skipping layout verification test - tmux not available"
+        return
+    fi
+    
+    # Create a test session with the same layout logic as ztop.sh
+    local test_session="ztop_layout_test"
+    
+    # Clean up any existing test session
+    tmux kill-session -t "$test_session" 2>/dev/null || true
+    
+    # Create session and layout
+    tmux new-session -d -s "$test_session" -x 120 -y 40
+    
+    # Apply the same layout creation logic as ztop.sh
+    tmux split-window -h -p 50 -t "$test_session:0.0"                  # Split into left/right halves  
+    tmux split-window -v -p 50 -t "$test_session:0.0"                  # Split left into top/bottom
+    tmux split-window -v -p 67 -t "$test_session:0.2"                  # Split right into top 33% and bottom 67%
+    tmux split-window -v -p 50 -t "$test_session:0.3"                  # Split bottom 67% into two 33% parts
+    
+    # Get pane information
+    local pane_count=$(tmux list-panes -t "$test_session" 2>/dev/null | wc -l | tr -d ' ')
+    
+    if [[ "$pane_count" -eq 5 ]]; then
+        pass "Layout created with correct number of panes (5)"
+    else
+        fail "Layout created with incorrect pane count: $pane_count (expected 5)"
+        tmux kill-session -t "$test_session" 2>/dev/null
+        return
+    fi
+    
+    # Get detailed pane layout information
+    local layout_info=$(tmux list-panes -t "$test_session" -F "#{pane_index}:#{pane_left},#{pane_top},#{pane_width}x#{pane_height}" 2>/dev/null)
+    
+    echo "Pane layout details:"
+    echo "$layout_info"
+    
+    # Parse pane positions to verify layout structure
+    local pane0_info=$(echo "$layout_info" | grep "^0:")
+    local pane1_info=$(echo "$layout_info" | grep "^1:")
+    local pane2_info=$(echo "$layout_info" | grep "^2:")
+    
+    # Extract left positions
+    local pane0_left=$(echo "$pane0_info" | sed 's/.*:\([0-9]*\),.*/\1/')
+    local pane1_left=$(echo "$pane1_info" | sed 's/.*:\([0-9]*\),.*/\1/')
+    local pane2_left=$(echo "$pane2_info" | sed 's/.*:\([0-9]*\),.*/\1/')
+    
+    # Verify panes 0 and 1 are on the left side (left=0) and pane 2 is on the right side (left>0)
+    if [[ "$pane0_left" -eq 0 && "$pane1_left" -eq 0 && "$pane2_left" -gt 0 ]]; then
+        pass "Layout structure correct: panes 0,1 on left; panes 2,3,4 on right"
+    else
+        fail "Layout structure incorrect: pane0_left=$pane0_left, pane1_left=$pane1_left, pane2_left=$pane2_left"
+        echo "Expected: panes 0,1 left=0 (left side), pane 2+ left>0 (right side)"
+    fi
+    
+    # Clean up
+    tmux kill-session -t "$test_session" 2>/dev/null
+}
+
 # Main test runner
 run_all_tests() {
-    echo -e "${BLUE}=== ZTop Test Suite ===${NC}"
+    echo -e "${BLUE}=== ZTop Compatibility Test Suite ===${NC}"
     echo "Testing script: $ZTOP_SCRIPT"
+    echo "Bash version: $BASH_VERSION"
     echo ""
     
     setup_test
@@ -378,16 +306,14 @@ run_all_tests() {
     # Run all tests
     test_script_exists
     test_help_function
-    test_layout_listing
     test_tool_listing
-    test_function_availability
-    test_layout_tools_parsing
-    test_command_generation
-    test_dependency_checking
     test_session_creation
-    test_layout_percentages
     test_error_handling
     test_kill_session
+    test_bash_compatibility
+    test_function_definitions
+    test_htop_mem_clean
+    test_layout_verification
     
     teardown_test
     

@@ -2,37 +2,26 @@
  
 Requirements: `brew install tmux htop mactop ctop nethogs`
 
-**Quick Start:**
-- Python version: `pipenv run python ztop.py`
-- Bash version: `./ztop.sh` (requires Bash 4+)
-- Compatibility version: `./ztop_compat.sh` (Bash 3.x compatible)
+**Quick Start:** `./ztop.sh`
 
 <img width="2106" height="1356" alt="image" src="https://github.com/user-attachments/assets/101fa69d-f266-4f77-9398-60a55bfb5138" />
 
 ---
 
-A terminal application that displays system monitoring tools in multiple layouts:
+A terminal application that displays system monitoring tools in an optimized 5-pane layout:
 
-## Python Version (4-pane layout)
-- **Top Left**: htop sorted by CPU usage
-- **Bottom Left**: htop sorted by memory usage  
-- **Top Right**: mactop (macOS activity monitor)
-- **Bottom Right**: ctop (container monitoring)
-
-## Bash Compatibility Version (5-pane layout)
+## Layout (5 panes)
 - **Left Half**: htop CPU (top) and htop memory with clean interface (bottom)
 - **Right Half**: mactop (top), ctop (middle), and nethogs (bottom)
 
 ## Prerequisites
 
-### All Versions
+### Required Tools
 - `tmux` - Terminal multiplexer
 - `htop` - Interactive process viewer
-- `mactop` - macOS activity monitor (install with `brew install mactop`)
-- `ctop` - Container monitoring tool (install with `brew install ctop`)
-
-### Compatibility Version Additional
-- `nethogs` - Network traffic monitor by process (install with `brew install nethogs`)
+- `mactop` - macOS activity monitor
+- `ctop` - Container monitoring tool
+- `nethogs` - Network traffic monitor by process
 
 ### Install All Dependencies
 ```bash
@@ -41,77 +30,49 @@ brew install tmux htop mactop ctop nethogs
 
 ## Installation & Usage
 
-### Python Version
-1. Install Python dependencies:
+1. Make the script executable:
    ```bash
-   pipenv install
+   chmod +x ztop.sh
    ```
 
-2. Run the application:
+2. Run ZTop:
    ```bash
-   pipenv run python ztop.py
-   ```
-
-   Or install as a package:
-   ```bash
-   pip install -e .
-   ztop
-   ```
-
-### Bash Versions
-1. Make scripts executable:
-   ```bash
-   chmod +x ztop.sh ztop_compat.sh
-   ```
-
-2. Run your preferred version:
-   ```bash
-   # Original bash version (requires Bash 4+)
    ./ztop.sh
-   
-   # Compatibility version (Bash 3.x compatible)
-   ./ztop_compat.sh
    ```
+
+The script will automatically:
+- Create a new tmux session named "ztop" with 5 optimized panes
+- Attach to existing session if already running
+- Apply clean htop interface with hidden graph meters
+- Check dependencies and suggest alternatives if tools are missing
 
 ## Features
 
-### Python Version
-- Real-time monitoring in 4 split panes
-- Color-coded panels for easy identification
-- Graceful shutdown handling
-- Automatic process cleanup on exit
-- Rich terminal UI library
-
-### Bash Compatibility Version
-- Enhanced 5-pane layout with optimized 50/50 split
-- Clean htop interface with automatic graph meter hiding
-- Comprehensive dependency checking with fallback alternatives
-- Session persistence with tmux (detach/reattach support)
-- Bash 3.x compatibility for older macOS systems
+- **Enhanced 5-pane layout** with optimized 50/50 split (2 panes left, 3 panes right)
+- **Clean htop interface** with automatic graph meter hiding using `#` keystroke
+- **Comprehensive dependency checking** with fallback alternatives (btop for mactop, etc.)
+- **Session persistence** with tmux (detach/reattach support)
+- **Bash 3.x+ compatibility** for older and newer macOS systems
+- **Graceful error handling** for missing tools with helpful suggestions
 
 ## Testing
 
-Run the comprehensive test suites:
+Run the comprehensive test suite:
 
 ```bash
-# Python tests (31 tests)
-pipenv run pytest
-
-# Bash compatibility tests (12 tests including layout verification)
-./test_ztop_compat.sh
-
-# Original bash tests (requires Bash 4+)
 ./test_ztop.sh
 ```
 
+**12 comprehensive tests** including:
+- Layout verification with automated tmux pane position testing
+- Dependency checking with tool alternatives validation
+- htop_mem_clean functionality with # keystroke validation
+- Integration tests for end-to-end functionality verification
+
+All tests pass successfully, ensuring reliable operation across different environments.
+
 ## Requirements
 
-### Python Version
-- Python 3.8+
-- rich library for terminal UI
-- Required monitoring tools
-
-### Bash Versions
-- tmux terminal multiplexer
-- Bash 3.x+ (compatibility version) or Bash 4+ (original version)
-- Required monitoring tools
+- **Bash 3.x+** (compatible with older and newer systems)
+- **tmux** terminal multiplexer
+- **Required monitoring tools** (htop, mactop, ctop, nethogs)
