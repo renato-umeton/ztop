@@ -1,4 +1,4 @@
-# ZTop - Terminal System Monitor v1.0
+# ZTop - Terminal System Monitor v1.1
  
 **Requirements:** `brew install tmux htop mactop ctop nethogs`
 
@@ -10,7 +10,7 @@
 
 A streamlined terminal application that displays system monitoring tools in a fixed 5-pane layout.
 
-**Production Release v1.0**: 182 lines of production-ready code with comprehensive testing and documentation.
+**Production Release v1.1**: 182 lines of production-ready code with comprehensive testing and documentation.
 
 ## Layout (5 panes)
 - **Left Half**: htop CPU (top) and htop memory with clean interface (bottom)
@@ -87,7 +87,7 @@ All tests pass successfully, ensuring reliable operation with the simplified des
 
 ## Design Philosophy
 
-This v1.0 release prioritizes **production readiness and reliability**:
+This v1.1 release prioritizes **production readiness and reliability**:
 - **No fallback tools** - ensures consistent behavior across environments
 - **Hardcoded configuration** - eliminates complex logic and edge cases
 - **Production-ready codebase** - thoroughly tested and documented
