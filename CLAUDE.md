@@ -11,7 +11,7 @@ ZTop v1.0 is a streamlined terminal application that creates a 5-pane layout dis
 
 ### ZTop v1.0 (`ztop.sh`) - Production Release
 - **Language**: Bash 3.x+ compatible
-- **Size**: 183 lines (production-ready, fully tested)
+- **Size**: 182 lines (production-ready, fully tested)
 - **UI Framework**: tmux for terminal multiplexing and pane management
 - **Process Management**: Direct command execution with hardcoded tool arrays
 - **Layout**: Fixed 5-pane layout with optimized 50/50 split
@@ -33,7 +33,7 @@ ZTop v1.0 is a streamlined terminal application that creates a 5-pane layout dis
 - `htop` - Interactive process viewer
 - `mactop` - macOS activity monitor
 - `ctop` - Container monitoring tool
-- `nethogs` - Network traffic monitor by process
+- `nethogs` - Network traffic monitor by process (runs continuously with sudo)
 
 ### Install All Dependencies
 ```bash
@@ -64,7 +64,7 @@ The script will:
 - **Streamlined dependency checking** - requires all tools, no alternatives
 - **Auto session management** - automatically attaches to existing or creates new
 - **Bash 3.x+ compatibility** for older and newer systems
-- **Production-ready codebase** - 183 lines, fully tested and documented
+- **Production-ready codebase** - 182 lines, fully tested and documented
 
 ### Technical Implementation
 - **Hardcoded tool arrays** - eliminates complex configuration logic
