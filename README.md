@@ -10,7 +10,7 @@
 
 A streamlined terminal application that displays system monitoring tools in a fixed 5-pane layout.
 
-**Production Release v1.0**: 183 lines of production-ready code with comprehensive testing and documentation.
+**Production Release v1.0**: 182 lines of production-ready code with comprehensive testing and documentation.
 
 ## Layout (5 panes)
 - **Left Half**: htop CPU (top) and htop memory with clean interface (bottom)
@@ -23,7 +23,7 @@ A streamlined terminal application that displays system monitoring tools in a fi
 - `htop` - Interactive process viewer
 - `mactop` - macOS activity monitor
 - `ctop` - Container monitoring tool
-- `nethogs` - Network traffic monitor by process
+- `nethogs` - Network traffic monitor by process (runs continuously with sudo)
 
 ### Install All Dependencies
 ```bash
@@ -56,7 +56,7 @@ The script will automatically:
 - **Fixed 5-pane layout** with optimized 50/50 split (2 panes left, 3 panes right)
 - **Clean htop interface** with automatic graph meter hiding using `#` keystroke
 - **Global quit shortcut** - press `q` from any pane to kill entire session instantly
-- **Production-ready design** - 183 lines of fully tested, documented code
+- **Production-ready design** - 182 lines of fully tested, documented code
 - **Auto session management** - no interactive prompts, automatic attach/create
 - **Bash 3.x+ compatibility** for older and newer macOS systems
 - **No fallback tools** - clean, predictable behavior requiring exact tools
