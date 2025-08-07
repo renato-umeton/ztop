@@ -50,4 +50,4 @@ venv.bak/
 .pytest_cache/
 .coverage
 htmlcov/
-.tox/
+.tox/.DS_Store
