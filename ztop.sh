@@ -64,51 +64,69 @@ manage_session() {
 create_session() {
     log "Creating new tmux session..."
     
-    tmux new-session -d -s "ztop" -x 120 -y 40
+    # Create session with fixed size for consistent layout
+    tmux new-session -d -s "ztop" -x 120 -y 40 2>/dev/null || tmux new-session -d -s "ztop"
     
     # Create 5-pane layout: 2 left, 3 right
-    tmux split-window -h -p 50 -t "ztop:0.0"
-    tmux split-window -v -p 50 -t "ztop:0.0"
-    tmux split-window -v -p 67 -t "ztop:0.2"
-    tmux split-window -v -p 50 -t "ztop:0.3"
+    # Using default splits first (works in detached mode)
+    tmux split-window -h -t "ztop:0.0"
+    tmux split-window -v -t "ztop:0.0"
+    tmux split-window -v -t "ztop:0.2"
+    tmux split-window -v -t "ztop:0.3"
+    
+    # Resize panes to achieve desired layout (50/50 split, with right side having 3 equal panes)
+    # Left side: 2 panes, 50% width each (60 columns of 120)
+    tmux resize-pane -t "ztop:0.0" -x 60 -y 20
+    tmux resize-pane -t "ztop:0.1" -x 60 -y 20
+    # Right side: 3 panes, 50% width (60 columns), split vertically into roughly equal parts
+    tmux resize-pane -t "ztop:0.2" -x 60 -y 13
+    tmux resize-pane -t "ztop:0.3" -x 60 -y 13
+    tmux resize-pane -t "ztop:0.4" -x 60 -y 14
     
     tmux set -g pane-border-status top
     tmux set -g pane-border-format "#{pane_index}: #{pane_title}"
 }
 
-# Launch monitoring tools in panes
+# Launch monitoring tools in panes (parallel for faster loading)
 launch_tools() {
     local tools=("htop_cpu" "htop_mem_clean" "mactop" "ctop" "nethogs")
     local commands=("htop -s PERCENT_CPU" "htop -s PERCENT_MEM" "mactop" "ctop" "while true; do sudo nethogs; sleep 1; done")
     local titles=("htop (CPU)" "htop (MEM-clean)" "mactop" "ctop" "nethogs")
     
+    # Launch all tools in parallel for faster startup
     for i in {0..4}; do
-        local tool=${tools[$i]}
-        local command=${commands[$i]}
-        local title=${titles[$i]}
-        
-        tmux select-pane -t "ztop:0.$i" -T "$title"
-        
-        if [[ "$command" == sudo* ]] && ! sudo -n true 2>/dev/null; then
-            warn "May need password for $tool"
-        fi
-        
-        tmux send-keys -t "ztop:0.$i" "$command" Enter
-        
-        # Hide graph meter for clean htop
-        if [[ "$tool" == "htop_mem_clean" ]]; then
-            sleep 2
-            tmux send-keys -t "ztop:0.$i" '#'
-        fi
+        (
+            local tool=${tools[$i]}
+            local command=${commands[$i]}
+            local title=${titles[$i]}
+            
+            tmux select-pane -t "ztop:0.$i" -T "$title"
+            
+            if [[ "$command" == sudo* ]] && ! sudo -n true 2>/dev/null; then
+                warn "May need password for $tool"
+            fi
+            
+            tmux send-keys -t "ztop:0.$i" "$command" Enter
+            
+            # Hide graph meter for clean htop
+            if [[ "$tool" == "htop_mem_clean" ]]; then
+                sleep 2
+                tmux send-keys -t "ztop:0.$i" '#'
+            fi
+        ) &
     done
+    
+    # Wait for all background jobs to complete
+    wait
 }
 
 # Configure tmux
 configure_tmux() {
     tmux set -g mouse on
     tmux set -g status-right "ztop | %H:%M %d-%b-%y"
-    # Global 'q' key binding to kill the entire ztop session
-    tmux bind-key -n q kill-session -t "ztop"
+    # Optimization: 'q' detaches (hibernate) instead of killing, 'k' kills the session
+    tmux bind-key -n q detach-client
+    tmux bind-key -n k kill-session -t "ztop"
 }
 
 # Help function
@@ -126,7 +144,8 @@ Options:
 Layout: Left[htop CPU + htop MEM] | Right[mactop + ctop + nethogs]
 
 Shortcuts:
-    q                   Kill entire session (works from any pane)
+    q                   Detach from session (tools keep running)
+    k                   Kill entire session (stop all tools)
 
 EOF
 }

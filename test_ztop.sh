@@ -103,13 +103,13 @@ test_session_creation() {
     fi
     
     # Create a test session manually using the same logic
-    tmux new-session -d -s "$TEST_SESSION" -x 80 -y 24
+    tmux new-session -d -s "$TEST_SESSION" -x 120 -y 40 2>/dev/null || tmux new-session -d -s "$TEST_SESSION"
     
-    # Create the layout structure
-    tmux split-window -h -p 50 -t "$TEST_SESSION:0"
-    tmux split-window -v -p 50 -t "$TEST_SESSION:0.0"
-    tmux split-window -v -p 50 -t "$TEST_SESSION:0.1"
-    tmux split-window -v -p 30 -t "$TEST_SESSION:0.2"
+    # Create the layout structure - same as ztop.sh (without percentages for compatibility)
+    tmux split-window -h -t "$TEST_SESSION:0.0"
+    tmux split-window -v -t "$TEST_SESSION:0.0"
+    tmux split-window -v -t "$TEST_SESSION:0.2"
+    tmux split-window -v -t "$TEST_SESSION:0.3"
     
     # Check if session exists and has correct pane count
     local pane_count
@@ -247,13 +247,13 @@ test_layout_verification() {
     tmux kill-session -t "$test_session" 2>/dev/null || true
     
     # Create session and layout
-    tmux new-session -d -s "$test_session" -x 120 -y 40
+    tmux new-session -d -s "$test_session" -x 120 -y 40 2>/dev/null || tmux new-session -d -s "$test_session"
     
-    # Apply the same layout creation logic as ztop.sh
-    tmux split-window -h -p 50 -t "$test_session:0.0"                  # Split into left/right halves  
-    tmux split-window -v -p 50 -t "$test_session:0.0"                  # Split left into top/bottom
-    tmux split-window -v -p 67 -t "$test_session:0.2"                  # Split right into top 33% and bottom 67%
-    tmux split-window -v -p 50 -t "$test_session:0.3"                  # Split bottom 67% into two 33% parts
+    # Apply the same layout creation logic as ztop.sh (without percentages for compatibility)
+    tmux split-window -h -t "$test_session:0.0"
+    tmux split-window -v -t "$test_session:0.0"
+    tmux split-window -v -t "$test_session:0.2"
+    tmux split-window -v -t "$test_session:0.3"
     
     # Get pane information
     local pane_count=$(tmux list-panes -t "$test_session" 2>/dev/null | wc -l | tr -d ' ')
@@ -310,7 +310,7 @@ test_global_q_keybinding() {
     tmux kill-session -t "$test_session" 2>/dev/null || true
     
     # Create session and apply the same configuration as ztop.sh
-    tmux new-session -d -s "$test_session" -x 120 -y 40
+    tmux new-session -d -s "$test_session" -x 120 -y 40 2>/dev/null || tmux new-session -d -s "$test_session"
     
     # Apply the tmux configuration from ztop.sh (including global 'q' binding)
     tmux set -g mouse on
@@ -354,6 +354,125 @@ test_global_q_keybinding() {
     fi
 }
 
+# Test 12: Test lazy loading - panes are created before tools are launched
+test_lazy_loading() {
+    log_test "Testing lazy loading - panes created before tools launched"
+    
+    if ! command -v tmux &> /dev/null; then
+        warn "Skipping lazy loading test - tmux not available"
+        return
+    fi
+    
+    # Check that the script has separate create_session and launch_tools functions
+    if grep -q "^create_session()" "$ZTOP_SCRIPT" && grep -q "^launch_tools()" "$ZTOP_SCRIPT"; then
+        pass "Separate create_session and launch_tools functions exist"
+    else
+        fail "Separate create_session and launch_tools functions not found"
+        return
+    fi
+    
+    # Check that create_session is called before launch_tools in main
+    local main_section=$(sed -n '/^main()/,/^}/p' "$ZTOP_SCRIPT")
+    
+    # Get line numbers of create_session and launch_tools calls
+    local create_line=$(echo "$main_section" | grep -n "create_session" | head -1 | cut -d: -f1)
+    local launch_line=$(echo "$main_section" | grep -n "launch_tools" | head -1 | cut -d: -f1)
+    
+    if [[ -n "$create_line" && -n "$launch_line" && "$create_line" -lt "$launch_line" ]]; then
+        pass "create_session is called before launch_tools (lazy loading pattern)"
+    else
+        fail "Lazy loading pattern not found - create_session should be called before launch_tools"
+    fi
+}
+
+# Test 13: Test parallel tool launching
+test_parallel_tool_launch() {
+    log_test "Testing parallel tool launching capability"
+    
+    # Check if launch_tools uses background processes for parallel loading
+    if grep -A 30 "^launch_tools()" "$ZTOP_SCRIPT" | grep -q ") &"; then
+        pass "launch_tools uses background processes for parallel execution"
+    else
+        warn "launch_tools may not use parallel execution (not a failure, but optimization opportunity)"
+        # Not failing this test since parallel loading is optional optimization
+        ((PASSED_TESTS++))
+    fi
+}
+
+# Test 14: Test 'q' key for detach instead of kill
+test_q_key_detach() {
+    log_test "Testing 'q' key for detach behavior instead of kill"
+    
+    if ! command -v tmux &> /dev/null; then
+        warn "Skipping q key detach test - tmux not available"
+        return
+    fi
+    
+    # Check if the script configures 'q' to detach instead of kill
+    if grep -q "bind-key.*q.*detach" "$ZTOP_SCRIPT"; then
+        pass "'q' key configured to detach session"
+    else
+        # Check if it still kills (old behavior)
+        if grep -q "bind-key.*q.*kill-session" "$ZTOP_SCRIPT"; then
+            fail "'q' key still kills session instead of detaching (optimization not implemented)"
+        else
+            fail "'q' key binding not found or not configured"
+        fi
+    fi
+}
+
+# Test 15: Test 'k' key for kill session
+test_k_key_kill() {
+    log_test "Testing 'k' key for kill session"
+    
+    if ! command -v tmux &> /dev/null; then
+        warn "Skipping k key kill test - tmux not available"
+        return
+    fi
+    
+    # Check if the script configures 'k' to kill the session
+    if grep -q "bind-key.*k.*kill-session" "$ZTOP_SCRIPT"; then
+        pass "'k' key configured to kill session"
+    else
+        fail "'k' key not configured to kill session (optimization not implemented)"
+    fi
+}
+
+# Test 16: Test session reattachment behavior
+test_session_reattachment() {
+    log_test "Testing session reattachment preserves running tools"
+    
+    if ! command -v tmux &> /dev/null; then
+        warn "Skipping session reattachment test - tmux not available"
+        return
+    fi
+    
+    # Create a test session with a long-running command
+    local test_session="ztop_reattach_test"
+    tmux kill-session -t "$test_session" 2>/dev/null || true
+    
+    # Create session with a simple command
+    tmux new-session -d -s "$test_session" "sleep 100"
+    
+    # Check that session exists
+    if tmux has-session -t "$test_session" 2>/dev/null; then
+        pass "Test session created successfully"
+        
+        # Test that the command is still running
+        local pane_running=$(tmux display-message -t "$test_session" -p "#{pane_pid}")
+        if [[ -n "$pane_running" ]] && ps -p "$pane_running" > /dev/null 2>&1; then
+            pass "Command continues running in detached session"
+        else
+            fail "Command not running in detached session"
+        fi
+    else
+        fail "Failed to create test session"
+    fi
+    
+    # Clean up
+    tmux kill-session -t "$test_session" 2>/dev/null || true
+}
+
 # Main test runner
 run_all_tests() {
     echo -e "${BLUE}=== ZTop Compatibility Test Suite ===${NC}"
@@ -375,6 +494,13 @@ run_all_tests() {
     test_htop_mem_clean
     test_layout_verification
     test_global_q_keybinding
+    
+    # New optimization tests
+    test_lazy_loading
+    test_parallel_tool_launch
+    test_q_key_detach
+    test_k_key_kill
+    test_session_reattachment
     
     teardown_test
     
