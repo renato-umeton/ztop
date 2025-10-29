@@ -87,39 +87,46 @@ create_session() {
     tmux set -g pane-border-format "#{pane_index}: #{pane_title}"
 }
 
-# Launch monitoring tools in panes
+# Launch monitoring tools in panes (parallel for faster loading)
 launch_tools() {
     local tools=("htop_cpu" "htop_mem_clean" "mactop" "ctop" "nethogs")
     local commands=("htop -s PERCENT_CPU" "htop -s PERCENT_MEM" "mactop" "ctop" "while true; do sudo nethogs; sleep 1; done")
     local titles=("htop (CPU)" "htop (MEM-clean)" "mactop" "ctop" "nethogs")
     
+    # Launch all tools in parallel for faster startup
     for i in {0..4}; do
-        local tool=${tools[$i]}
-        local command=${commands[$i]}
-        local title=${titles[$i]}
-        
-        tmux select-pane -t "ztop:0.$i" -T "$title"
-        
-        if [[ "$command" == sudo* ]] && ! sudo -n true 2>/dev/null; then
-            warn "May need password for $tool"
-        fi
-        
-        tmux send-keys -t "ztop:0.$i" "$command" Enter
-        
-        # Hide graph meter for clean htop
-        if [[ "$tool" == "htop_mem_clean" ]]; then
-            sleep 2
-            tmux send-keys -t "ztop:0.$i" '#'
-        fi
+        (
+            local tool=${tools[$i]}
+            local command=${commands[$i]}
+            local title=${titles[$i]}
+            
+            tmux select-pane -t "ztop:0.$i" -T "$title"
+            
+            if [[ "$command" == sudo* ]] && ! sudo -n true 2>/dev/null; then
+                warn "May need password for $tool"
+            fi
+            
+            tmux send-keys -t "ztop:0.$i" "$command" Enter
+            
+            # Hide graph meter for clean htop
+            if [[ "$tool" == "htop_mem_clean" ]]; then
+                sleep 2
+                tmux send-keys -t "ztop:0.$i" '#'
+            fi
+        ) &
     done
+    
+    # Wait for all background jobs to complete
+    wait
 }
 
 # Configure tmux
 configure_tmux() {
     tmux set -g mouse on
     tmux set -g status-right "ztop | %H:%M %d-%b-%y"
-    # Global 'q' key binding to kill the entire ztop session
-    tmux bind-key -n q kill-session -t "ztop"
+    # Optimization: 'q' detaches (hibernate) instead of killing, 'k' kills the session
+    tmux bind-key -n q detach-client
+    tmux bind-key -n k kill-session -t "ztop"
 }
 
 # Help function
@@ -137,7 +144,8 @@ Options:
 Layout: Left[htop CPU + htop MEM] | Right[mactop + ctop + nethogs]
 
 Shortcuts:
-    q                   Kill entire session (works from any pane)
+    q                   Detach from session (tools keep running)
+    k                   Kill entire session (stop all tools)
 
 EOF
 }
