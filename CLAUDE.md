@@ -1,7 +1,7 @@
 # ZTop - Terminal System Monitor v1.2
 
 ## Project Overview
-ZTop v1.2 is an optimized terminal application that creates a 5-pane layout displaying system monitoring tools in a single tmux session with fast loading and warm start capabilities.
+ZTop v1.2 is an optimized terminal application that creates a 5-pane layout displaying system monitoring tools in a single tmux session. It features fast loading and warm start capabilities.
 
 ### Layout (5 panes)
 - **Left Half**: htop CPU (top) and htop memory with clean interface (bottom)

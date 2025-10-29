@@ -46,7 +46,7 @@ brew install tmux htop mactop ctop nethogs
 
 The script will automatically:
 - Create a new tmux session named "ztop" with 5 optimized panes
-- Auto-attach to existing session if already running (instant warm start!)
+- Auto-attach to existing session if already running (instant warm start)
 - Launch all monitoring tools in parallel for faster startup
 - Apply clean htop interface with hidden graph meters
 - Setup optimized key shortcuts ('q' to detach, 'k' to kill)
