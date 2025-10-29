@@ -64,13 +64,24 @@ manage_session() {
 create_session() {
     log "Creating new tmux session..."
     
-    tmux new-session -d -s "ztop" -x 120 -y 40
+    # Create session with fixed size for consistent layout
+    tmux new-session -d -s "ztop" -x 120 -y 40 2>/dev/null || tmux new-session -d -s "ztop"
     
     # Create 5-pane layout: 2 left, 3 right
-    tmux split-window -h -p 50 -t "ztop:0.0"
-    tmux split-window -v -p 50 -t "ztop:0.0"
-    tmux split-window -v -p 67 -t "ztop:0.2"
-    tmux split-window -v -p 50 -t "ztop:0.3"
+    # Using default splits first (works in detached mode)
+    tmux split-window -h -t "ztop:0.0"
+    tmux split-window -v -t "ztop:0.0"
+    tmux split-window -v -t "ztop:0.2"
+    tmux split-window -v -t "ztop:0.3"
+    
+    # Resize panes to achieve desired layout (50/50 split, with right side having 3 equal panes)
+    # Left side: 2 panes, 50% width each (60 columns of 120)
+    tmux resize-pane -t "ztop:0.0" -x 60 -y 20
+    tmux resize-pane -t "ztop:0.1" -x 60 -y 20
+    # Right side: 3 panes, 50% width (60 columns), split vertically into roughly equal parts
+    tmux resize-pane -t "ztop:0.2" -x 60 -y 13
+    tmux resize-pane -t "ztop:0.3" -x 60 -y 13
+    tmux resize-pane -t "ztop:0.4" -x 60 -y 14
     
     tmux set -g pane-border-status top
     tmux set -g pane-border-format "#{pane_index}: #{pane_title}"

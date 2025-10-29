@@ -103,13 +103,13 @@ test_session_creation() {
     fi
     
     # Create a test session manually using the same logic
-    tmux new-session -d -s "$TEST_SESSION" -x 80 -y 24
+    tmux new-session -d -s "$TEST_SESSION" -x 120 -y 40 2>/dev/null || tmux new-session -d -s "$TEST_SESSION"
     
-    # Create the layout structure
-    tmux split-window -h -p 50 -t "$TEST_SESSION:0"
-    tmux split-window -v -p 50 -t "$TEST_SESSION:0.0"
-    tmux split-window -v -p 50 -t "$TEST_SESSION:0.1"
-    tmux split-window -v -p 30 -t "$TEST_SESSION:0.2"
+    # Create the layout structure - same as ztop.sh (without percentages for compatibility)
+    tmux split-window -h -t "$TEST_SESSION:0.0"
+    tmux split-window -v -t "$TEST_SESSION:0.0"
+    tmux split-window -v -t "$TEST_SESSION:0.2"
+    tmux split-window -v -t "$TEST_SESSION:0.3"
     
     # Check if session exists and has correct pane count
     local pane_count
@@ -247,13 +247,13 @@ test_layout_verification() {
     tmux kill-session -t "$test_session" 2>/dev/null || true
     
     # Create session and layout
-    tmux new-session -d -s "$test_session" -x 120 -y 40
+    tmux new-session -d -s "$test_session" -x 120 -y 40 2>/dev/null || tmux new-session -d -s "$test_session"
     
-    # Apply the same layout creation logic as ztop.sh
-    tmux split-window -h -p 50 -t "$test_session:0.0"                  # Split into left/right halves  
-    tmux split-window -v -p 50 -t "$test_session:0.0"                  # Split left into top/bottom
-    tmux split-window -v -p 67 -t "$test_session:0.2"                  # Split right into top 33% and bottom 67%
-    tmux split-window -v -p 50 -t "$test_session:0.3"                  # Split bottom 67% into two 33% parts
+    # Apply the same layout creation logic as ztop.sh (without percentages for compatibility)
+    tmux split-window -h -t "$test_session:0.0"
+    tmux split-window -v -t "$test_session:0.0"
+    tmux split-window -v -t "$test_session:0.2"
+    tmux split-window -v -t "$test_session:0.3"
     
     # Get pane information
     local pane_count=$(tmux list-panes -t "$test_session" 2>/dev/null | wc -l | tr -d ' ')
@@ -310,7 +310,7 @@ test_global_q_keybinding() {
     tmux kill-session -t "$test_session" 2>/dev/null || true
     
     # Create session and apply the same configuration as ztop.sh
-    tmux new-session -d -s "$test_session" -x 120 -y 40
+    tmux new-session -d -s "$test_session" -x 120 -y 40 2>/dev/null || tmux new-session -d -s "$test_session"
     
     # Apply the tmux configuration from ztop.sh (including global 'q' binding)
     tmux set -g mouse on
