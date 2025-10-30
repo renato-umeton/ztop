@@ -13,14 +13,15 @@ class Ztop < Formula
   depends_on :macos
 
   def install
-    bin.install "ztop.sh" => "ztop"
+    # Explicitly reference files from buildpath
+    bin.install buildpath/"ztop.sh" => "ztop"
 
     # Install Oh My Zsh plugin
-    (share/"oh-my-zsh/custom/plugins/ztop").install "ztop.plugin.zsh"
-    (share/"oh-my-zsh/custom/plugins/ztop").install "ztop.sh"
-    (share/"oh-my-zsh/custom/plugins/ztop").install "test_ztop.sh"
-    (share/"oh-my-zsh/custom/plugins/ztop").install "README.md"
-    (share/"oh-my-zsh/custom/plugins/ztop").install "CLAUDE.md"
+    (share/"oh-my-zsh/custom/plugins/ztop").install buildpath/"ztop.plugin.zsh"
+    (share/"oh-my-zsh/custom/plugins/ztop").install buildpath/"ztop.sh"
+    (share/"oh-my-zsh/custom/plugins/ztop").install buildpath/"test_ztop.sh"
+    (share/"oh-my-zsh/custom/plugins/ztop").install buildpath/"README.md"
+    (share/"oh-my-zsh/custom/plugins/ztop").install buildpath/"CLAUDE.md"
 
     # Create symlink for zz alias
     bin.install_symlink bin/"ztop" => "zz"
