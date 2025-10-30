@@ -95,11 +95,9 @@ The application follows a **lazy loading with parallel execution** pattern:
 ### Sudo Requirements
 - htop, mactop, and nethogs require sudo for full system access
 - Users should configure passwordless sudo in /etc/sudoers using `visudo`
-- Example sudoers entries (use absolute paths):
+- Example sudoers entry (use absolute paths, all admin users):
   ```
-  yourusername ALL=(ALL) NOPASSWD: /opt/homebrew/bin/htop
-  yourusername ALL=(ALL) NOPASSWD: /opt/homebrew/bin/mactop
-  yourusername ALL=(ALL) NOPASSWD: /opt/homebrew/bin/nethogs
+  %admin ALL=(ALL) NOPASSWD: /opt/homebrew/bin/htop, /opt/homebrew/bin/mactop, /opt/homebrew/bin/nethogs
   ```
 - Without passwordless sudo, user will be prompted for password on each tool launch
 

@@ -12,10 +12,8 @@ brew install tmux htop mactop ctop nethogs
 
 # Configure passwordless sudo (required)
 sudo visudo
-# Add these lines (replace yourusername):
-yourusername ALL=(ALL) NOPASSWD: /opt/homebrew/bin/htop
-yourusername ALL=(ALL) NOPASSWD: /opt/homebrew/bin/mactop
-yourusername ALL=(ALL) NOPASSWD: /opt/homebrew/bin/nethogs
+# Add this line:
+%admin ALL=(ALL) NOPASSWD: /opt/homebrew/bin/htop, /opt/homebrew/bin/mactop, /opt/homebrew/bin/nethogs
 
 # Run
 ./ztop.sh
