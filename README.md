@@ -1,4 +1,4 @@
-# ZTop - Terminal System Monitor v1.3
+# ZTop - Terminal System Monitor v1.5
 
 All-in-one terminal system monitor with 5 panes: CPU, memory, Mac metrics, containers, and network traffic.
 
