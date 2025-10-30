@@ -24,7 +24,10 @@ plugins=(... ztop)
 source ~/.zshrc
 ```
 
-The plugin will automatically clone the ztop repository and set up aliases on first load.
+The plugin will automatically:
+- Clone the ztop repository
+- Set up aliases
+- Offer to configure passwordless sudo for you
 
 ## Prerequisites
 
@@ -34,7 +37,14 @@ Make sure you have the required dependencies installed:
 brew install tmux htop mactop ctop nethogs
 ```
 
-**Configure passwordless sudo** (required for full functionality):
+## Automatic Sudoers Configuration
+
+On first load, the plugin will ask if you want to configure passwordless sudo. If you accept:
+- It will automatically detect the paths to htop, mactop, and nethogs
+- Validate the sudoers configuration before applying
+- Add one line to /etc/sudoers safely
+
+If you prefer to configure manually:
 
 ```bash
 sudo visudo
