@@ -2,7 +2,7 @@ class Ztop < Formula
   desc "All-in-one terminal system monitor with 5-pane layout for macOS"
   homepage "https://github.com/renato-umeton/ztop"
   url "https://github.com/renato-umeton/ztop/archive/refs/tags/v1.6.tar.gz"
-  sha256 "3b7d62f969eb377355c725c8f7ce237d079e52f7b7b9a5c4b641daee32a5c98e"
+  sha256 "41c5bf773dc78b560c99525062e464360245cf6fbef5d6e1f57a2a8ae8606b51"
   license "MIT"
 
   depends_on "tmux"
