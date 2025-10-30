@@ -13,18 +13,17 @@ class Ztop < Formula
   depends_on :macos
 
   def install
-    # Debug: check if files exist
-    ohai "Buildpath: #{buildpath}"
-    ohai "Buildpath exists?: #{buildpath.exist?}"
-    ohai "Buildpath directory?: #{buildpath.directory?}"
-    ohai "ztop.sh exists?: #{(buildpath/"ztop.sh").exist?}"
-    ohai "Listing directory contents:"
-    Dir.glob(buildpath/"*").each do |f|
-      ohai "  Found: #{File.basename(f)}"
-    end
+    # Debug: check file path resolution
+    ztop_path = buildpath/"ztop.sh"
+    ohai "Full path to ztop.sh: #{ztop_path}"
+    ohai "Path class: #{ztop_path.class}"
+    ohai "File exists (File.exist?): #{File.exist?(ztop_path)}"
+    ohai "File exists (Pathname#exist?): #{ztop_path.exist?}"
+    ohai "File readable?: #{File.readable?(ztop_path)}"
+    ohai "File stat: #{File.stat(ztop_path).inspect}" rescue ohai "File.stat failed"
 
     # Install main script using full buildpath
-    bin.install buildpath/"ztop.sh" => "ztop"
+    bin.install ztop_path => "ztop"
 
     # Install Oh My Zsh plugin files
     plugin_dir = share/"oh-my-zsh/custom/plugins/ztop"
