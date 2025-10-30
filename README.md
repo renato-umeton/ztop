@@ -4,43 +4,26 @@ All-in-one terminal system monitor with 5 panes: CPU, memory, Mac metrics, conta
 
 <img width="2106" height="1356" alt="image" src="https://github.com/user-attachments/assets/101fa69d-f266-4f77-9398-60a55bfb5138" />
 
-## Quick Start
-
-### Option 1: Oh My Zsh Plugin (Recommended - Fully Automatic!)
+## Installation (3 Steps - Fully Automatic!)
 
 ```bash
-# Clone into Oh My Zsh plugins
+# 1. Clone into Oh My Zsh plugins
 git clone https://github.com/renato-umeton/ztop.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/ztop
 
-# Add to ~/.zshrc plugins array
+# 2. Add to ~/.zshrc plugins array
 plugins=(... ztop)
 
-# Reload shell - automatic sudoers configuration happens here!
+# 3. Reload shell - automatic sudoers configuration happens here!
 source ~/.zshrc
-
-# Launch with either 'ztop' or 'zz'
-ztop  # or
-zz    # shorter
 ```
 
-The plugin **automatically configures passwordless sudo** on first load - no prompts, no manual steps!
+**That's it!** The plugin automatically:
+- Configures passwordless sudo (no prompts!)
+- Sets up all aliases: `ztop`, `zz`, and helpers
+- Detects binary paths
+- Validates configuration before applying
 
-See [ohmyzsh-ztop/README.md](ohmyzsh-ztop/README.md) for details.
-
-### Option 2: Manual Installation
-
-```bash
-# Install dependencies
-brew install tmux htop mactop ctop nethogs
-
-# Configure passwordless sudo (required)
-sudo visudo
-# Add this line:
-%admin ALL=(ALL) NOPASSWD: /opt/homebrew/bin/htop, /opt/homebrew/bin/mactop, /opt/homebrew/bin/nethogs
-
-# Run
-./ztop.sh
-```
+Just type `ztop` or `zz` to launch!
 
 ## Key Features
 
@@ -52,16 +35,17 @@ sudo visudo
 
 ## Usage
 
-- `ztop` / `zz` - Launch (with Oh My Zsh plugin)
-- `./ztop.sh` - Launch (manual installation)
+- `ztop` / `zz` - Launch ztop
+- `ztop-update` / `zz-update` - Update to latest version
+- `ztop-test` / `zz-test` - Run test suite
+- `ztop-kill` / `zz-kill` - Kill the session
 - `q` - Detach (tools keep running)
 - `k` - Kill session (stop all tools)
-- `./ztop.sh --help` - Show all options
 
 ## Requirements
 
-- macOS with Homebrew
-- Bash 3.x+
-- tmux, htop, mactop, ctop, nethogs
+- **macOS** with Homebrew
+- **Oh My Zsh** installed
+- **Dependencies**: `brew install tmux htop mactop ctop nethogs`
 
-Run `./test_ztop.sh` to verify installation (22 tests).
+All configuration is automatic - the plugin handles everything!
