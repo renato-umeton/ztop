@@ -6,21 +6,7 @@ All-in-one terminal system monitor with 5 panes: CPU, memory, Mac metrics, conta
 
 ## Installation
 
-### Option 1: Homebrew (Recommended - Fully Automatic!)
-
-```bash
-brew tap renato-umeton/ztop
-brew install ztop
-```
-
-**That's it!** Installation automatically:
-- Configures passwordless sudo (no prompts!)
-- Sets up `ztop` and `zz` commands
-- Installs all dependencies
-
-Just type `ztop` or `zz` to launch!
-
-### Option 2: Oh My Zsh Plugin (Fully Automatic!)
+### Oh My Zsh Plugin (Fully Automatic!)
 
 ```bash
 # 1. Clone into Oh My Zsh plugins
