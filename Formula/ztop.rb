@@ -22,8 +22,8 @@ class Ztop < Formula
     ohai "File readable?: #{File.readable?(ztop_path)}"
     ohai "File stat: #{File.stat(ztop_path).inspect}" rescue ohai "File.stat failed"
 
-    # Install main script using full buildpath
-    bin.install ztop_path => "ztop"
+    # Install main script using string path
+    bin.install ztop_path.to_s => "ztop"
 
     # Install Oh My Zsh plugin files
     plugin_dir = share/"oh-my-zsh/custom/plugins/ztop"
