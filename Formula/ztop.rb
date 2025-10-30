@@ -23,16 +23,16 @@ class Ztop < Formula
       ohai "  Found: #{File.basename(f)}"
     end
 
-    # Install main script
-    bin.install "ztop.sh" => "ztop"
+    # Install main script using full buildpath
+    bin.install buildpath/"ztop.sh" => "ztop"
 
     # Install Oh My Zsh plugin files
     plugin_dir = share/"oh-my-zsh/custom/plugins/ztop"
-    plugin_dir.install "ztop.plugin.zsh"
-    plugin_dir.install "ztop.sh"
-    plugin_dir.install "test_ztop.sh"
-    plugin_dir.install "README.md"
-    plugin_dir.install "CLAUDE.md"
+    plugin_dir.install buildpath/"ztop.plugin.zsh"
+    plugin_dir.install buildpath/"ztop.sh"
+    plugin_dir.install buildpath/"test_ztop.sh"
+    plugin_dir.install buildpath/"README.md"
+    plugin_dir.install buildpath/"CLAUDE.md"
 
     # Create symlink for zz alias
     bin.install_symlink bin/"ztop" => "zz"
