@@ -89,11 +89,19 @@ if [[ ! -d "$ZTOP_DIR" ]]; then
     fi
 fi
 
-# Create alias for ztop
+# Create aliases for ztop
 if [[ -f "$ZTOP_DIR/ztop.sh" ]]; then
+    # Main aliases - both ztop and zz work
+    alias ztop="$ZTOP_DIR/ztop.sh"
     alias zz="$ZTOP_DIR/ztop.sh"
 
-    # Additional helpful aliases
+    # Additional helpful aliases (both ztop-* and zz-* variants)
+    alias ztop-update="cd $ZTOP_DIR && git pull && cd -"
+    alias ztop-test="$ZTOP_DIR/test_ztop.sh"
+    alias ztop-kill="$ZTOP_DIR/ztop.sh --kill"
+    alias ztop-help="$ZTOP_DIR/ztop.sh --help"
+
+    # Short zz-* aliases
     alias zz-update="cd $ZTOP_DIR && git pull && cd -"
     alias zz-test="$ZTOP_DIR/test_ztop.sh"
     alias zz-kill="$ZTOP_DIR/ztop.sh --kill"

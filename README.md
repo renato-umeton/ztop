@@ -18,8 +18,9 @@ plugins=(... ztop)
 # Reload shell
 source ~/.zshrc
 
-# Use the 'zz' alias
-zz
+# Launch with either 'ztop' or 'zz'
+ztop  # or
+zz    # shorter
 ```
 
 See [ohmyzsh-ztop/README.md](ohmyzsh-ztop/README.md) for details.
@@ -49,9 +50,10 @@ sudo visudo
 
 ## Usage
 
+- `ztop` / `zz` - Launch (with Oh My Zsh plugin)
+- `./ztop.sh` - Launch (manual installation)
 - `q` - Detach (tools keep running)
 - `k` - Kill session (stop all tools)
-- `./ztop.sh` - Run or reattach to existing session
 - `./ztop.sh --help` - Show all options
 
 ## Requirements

@@ -54,18 +54,27 @@ sudo visudo
 
 ## Aliases
 
-- `zz` - Launch ztop (or reattach to existing session)
-- `zz-update` - Update ztop to the latest version
-- `zz-test` - Run ztop test suite
-- `zz-kill` - Kill the ztop session
-- `zz-help` - Show ztop help
+### Main Aliases (both work!)
+
+- `ztop` - Launch ztop (or reattach to existing session)
+- `zz` - Same as ztop (shorter alias)
+
+### Helper Aliases (both variants available)
+
+- `ztop-update` / `zz-update` - Update ztop to the latest version
+- `ztop-test` / `zz-test` - Run ztop test suite
+- `ztop-kill` / `zz-kill` - Kill the ztop session
+- `ztop-help` / `zz-help` - Show ztop help
+
+Use whichever naming style you prefer!
 
 ## Usage
 
-Simply type `zz` in your terminal to launch ztop:
+Simply type `ztop` or `zz` in your terminal to launch ztop:
 
 ```bash
-zz
+ztop  # or
+zz    # shorter version
 ```
 
 Press `q` to detach (keeps running in background), or `k` to kill the session.
