@@ -25,9 +25,10 @@ source ~/.zshrc
 ```
 
 The plugin will automatically:
-- Clone the ztop repository
-- Set up aliases
-- Offer to configure passwordless sudo for you
+- Set up all aliases (ztop, zz, and helpers)
+- **Automatically configure passwordless sudo** (no prompts!)
+- Detect binary paths for htop, mactop, nethogs
+- Validate sudoers before applying changes
 
 ## Prerequisites
 
@@ -37,14 +38,15 @@ Make sure you have the required dependencies installed:
 brew install tmux htop mactop ctop nethogs
 ```
 
-## Automatic Sudoers Configuration
+## Fully Automatic Sudoers Configuration
 
-On first load, the plugin will ask if you want to configure passwordless sudo. If you accept:
-- It will automatically detect the paths to htop, mactop, and nethogs
-- Validate the sudoers configuration before applying
-- Add one line to /etc/sudoers safely
+On first load, the plugin **automatically configures passwordless sudo** without any prompts:
+- Detects the paths to htop, mactop, and nethogs
+- Validates the sudoers configuration before applying
+- Safely adds one line to /etc/sudoers
+- Shows status messages during configuration
 
-If you prefer to configure manually:
+Manual configuration (optional, if automatic fails):
 
 ```bash
 sudo visudo

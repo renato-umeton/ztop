@@ -6,7 +6,7 @@ All-in-one terminal system monitor with 5 panes: CPU, memory, Mac metrics, conta
 
 ## Quick Start
 
-### Option 1: Oh My Zsh Plugin (Recommended)
+### Option 1: Oh My Zsh Plugin (Recommended - Fully Automatic!)
 
 ```bash
 # Clone into Oh My Zsh plugins
@@ -15,13 +15,15 @@ git clone https://github.com/renato-umeton/ztop.git ${ZSH_CUSTOM:-~/.oh-my-zsh/c
 # Add to ~/.zshrc plugins array
 plugins=(... ztop)
 
-# Reload shell
+# Reload shell - automatic sudoers configuration happens here!
 source ~/.zshrc
 
 # Launch with either 'ztop' or 'zz'
 ztop  # or
 zz    # shorter
 ```
+
+The plugin **automatically configures passwordless sudo** on first load - no prompts, no manual steps!
 
 See [ohmyzsh-ztop/README.md](ohmyzsh-ztop/README.md) for details.
 

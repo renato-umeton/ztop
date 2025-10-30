@@ -4,63 +4,46 @@
 # Plugin directory (where this file is located)
 ZTOP_DIR="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/ztop"
 
-# Check and configure sudoers
+# Check and configure sudoers automatically
 _ztop_check_sudoers() {
     # Check if sudoers already configured
     if sudo grep -q "NOPASSWD.*htop.*mactop.*nethogs" /etc/sudoers /etc/sudoers.d/* 2>/dev/null; then
+        echo "✓ Sudoers already configured for ztop"
         return 0
     fi
 
     echo ""
-    echo "⚠️  ZTop requires passwordless sudo for htop, mactop, and nethogs"
-    echo ""
-    echo "Would you like to configure sudoers now? This will:"
-    echo "  - Allow all admin users to run htop, mactop, nethogs without password"
-    echo "  - Add one line to /etc/sudoers using 'sudo visudo'"
-    echo ""
-    read -q "REPLY?Configure sudoers? [y/N] "
-    echo ""
+    echo "🔧 Configuring passwordless sudo for htop, mactop, and nethogs..."
 
-    if [[ $REPLY =~ ^[Yy]$ ]]; then
-        # Find actual paths to binaries
-        local htop_path=$(which htop 2>/dev/null || echo "/opt/homebrew/bin/htop")
-        local mactop_path=$(which mactop 2>/dev/null || echo "/opt/homebrew/bin/mactop")
-        local nethogs_path=$(which nethogs 2>/dev/null || echo "/opt/homebrew/bin/nethogs")
+    # Find actual paths to binaries
+    local htop_path=$(which htop 2>/dev/null || echo "/opt/homebrew/bin/htop")
+    local mactop_path=$(which mactop 2>/dev/null || echo "/opt/homebrew/bin/mactop")
+    local nethogs_path=$(which nethogs 2>/dev/null || echo "/opt/homebrew/bin/nethogs")
 
-        local sudoers_line="%admin ALL=(ALL) NOPASSWD: $htop_path, $mactop_path, $nethogs_path"
+    local sudoers_line="%admin ALL=(ALL) NOPASSWD: $htop_path, $mactop_path, $nethogs_path"
 
-        echo ""
-        echo "Adding to sudoers:"
-        echo "  $sudoers_line"
-        echo ""
+    echo "   Adding to /etc/sudoers: $sudoers_line"
 
-        # Use a temp file for validation
-        local temp_sudoers=$(mktemp)
-        sudo cat /etc/sudoers > "$temp_sudoers"
-        echo "" >> "$temp_sudoers"
-        echo "# ZTop monitoring tools - passwordless sudo" >> "$temp_sudoers"
-        echo "$sudoers_line" >> "$temp_sudoers"
+    # Use a temp file for validation
+    local temp_sudoers=$(mktemp)
+    sudo cat /etc/sudoers > "$temp_sudoers" 2>/dev/null
+    echo "" >> "$temp_sudoers"
+    echo "# ZTop monitoring tools - passwordless sudo" >> "$temp_sudoers"
+    echo "$sudoers_line" >> "$temp_sudoers"
 
-        # Validate the sudoers file
-        if sudo visudo -c -f "$temp_sudoers" &>/dev/null; then
-            # Validation passed, append to actual sudoers
-            echo "# ZTop monitoring tools - passwordless sudo" | sudo tee -a /etc/sudoers >/dev/null
-            echo "$sudoers_line" | sudo tee -a /etc/sudoers >/dev/null
-            echo "✓ Sudoers configured successfully!"
-        else
-            echo "✗ Sudoers validation failed. Please configure manually:"
-            echo "  sudo visudo"
-            echo "  Add: $sudoers_line"
-        fi
-        rm -f "$temp_sudoers"
+    # Validate the sudoers file
+    if sudo visudo -c -f "$temp_sudoers" &>/dev/null; then
+        # Validation passed, append to actual sudoers
+        echo "# ZTop monitoring tools - passwordless sudo" | sudo tee -a /etc/sudoers >/dev/null
+        echo "$sudoers_line" | sudo tee -a /etc/sudoers >/dev/null
+        echo "✓ Sudoers configured successfully!"
     else
-        echo ""
-        echo "⚠️  ZTop will prompt for password on each launch."
-        echo "   To configure later, run: sudo visudo"
-        echo "   Add this line:"
-        echo "   %admin ALL=(ALL) NOPASSWD: /opt/homebrew/bin/htop, /opt/homebrew/bin/mactop, /opt/homebrew/bin/nethogs"
-        echo ""
+        echo "✗ Sudoers validation failed. Please configure manually:"
+        echo "  sudo visudo"
+        echo "  Add: $sudoers_line"
     fi
+    rm -f "$temp_sudoers"
+    echo ""
 }
 
 # Check if ztop.sh exists and offer to configure sudoers on first run
