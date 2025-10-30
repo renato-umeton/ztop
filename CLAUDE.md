@@ -3,7 +3,7 @@
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Project Overview
-ZTop v1.2 is a bash-based terminal application that creates a 5-pane tmux layout displaying system monitoring tools. It features performance optimizations including lazy loading, parallel tool execution, and warm start capabilities.
+ZTop v1.3 is a bash-based terminal application that creates a 5-pane tmux layout displaying system monitoring tools. It features performance optimizations including lazy loading, parallel tool execution, warm start capabilities, and full sudo support for comprehensive system monitoring.
 
 ## Commands
 
