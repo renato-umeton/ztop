@@ -13,6 +13,14 @@ class Ztop < Formula
   depends_on :macos
 
   def install
+    # Debug: print current directory and list files
+    ohai "Current directory: #{Dir.pwd}"
+    ohai "Buildpath: #{buildpath}"
+    ohai "Files in current directory:"
+    system "ls", "-la"
+    ohai "Files in buildpath:"
+    system "ls", "-la", buildpath.to_s
+
     # Install main script
     bin.install "ztop.sh" => "ztop"
 
