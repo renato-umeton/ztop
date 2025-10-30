@@ -6,7 +6,38 @@ All-in-one terminal system monitor with 5 panes: CPU, memory, Mac metrics, conta
 
 ## Installation
 
-### Oh My Zsh Plugin (Fully Automatic!)
+### Automated Installation (Recommended!)
+
+Run this single command to install ztop automatically:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/renato-umeton/ztop/main/install.sh | bash
+```
+
+Or clone and run locally:
+
+```bash
+git clone https://github.com/renato-umeton/ztop.git /tmp/ztop && bash /tmp/ztop/install.sh
+```
+
+**The installer automatically:**
+- ✓ Checks for Oh My Zsh installation
+- ✓ Clones the plugin to the correct directory
+- ✓ Updates your `~/.zshrc` with the ztop plugin
+- ✓ Checks and offers to install missing dependencies
+- ✓ Provides helpful status messages throughout
+- ✓ Creates a backup of your `.zshrc` before modifications
+
+After installation, the plugin automatically:
+- Configures passwordless sudo (no prompts!)
+- Sets up all aliases: `ztop`, `zz`, and helpers
+- Detects binary paths and validates configuration
+
+Just type `ztop` or `zz` to launch!
+
+### Manual Installation
+
+If you prefer to install manually:
 
 ```bash
 # 1. Clone into Oh My Zsh plugins
@@ -18,14 +49,6 @@ plugins=(... ztop)
 # 3. Reload shell - automatic sudoers configuration happens here!
 source ~/.zshrc
 ```
-
-**That's it!** The plugin automatically:
-- Configures passwordless sudo (no prompts!)
-- Sets up all aliases: `ztop`, `zz`, and helpers
-- Detects binary paths
-- Validates configuration before applying
-
-Just type `ztop` or `zz` to launch!
 
 ## Key Features
 
