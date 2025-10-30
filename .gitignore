@@ -51,3 +51,6 @@ venv.bak/
 .coverage
 htmlcov/
 .tox/.DS_Store
+
+# ZTop plugin
+.ztop_configured
