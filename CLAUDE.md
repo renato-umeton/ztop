@@ -3,9 +3,14 @@
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Project Overview
-ZTop v1.6 is a bash-based terminal application that creates a 5-pane tmux layout displaying system monitoring tools. It features performance optimizations including lazy loading, parallel tool execution, warm start capabilities, full sudo support for comprehensive system monitoring, an auto-configuring Oh My Zsh plugin, and fully automatic Homebrew installation with sudoers configuration.
+ZTop v1.6 is a bash-based terminal application that creates a 5-pane tmux layout displaying system monitoring tools. It features performance optimizations including lazy loading, parallel tool execution, warm start capabilities, full sudo support for comprehensive system monitoring, an auto-configuring Oh My Zsh plugin, and a one-command automated installer that handles plugin setup, dependencies, and configuration.
 
 ## Commands
+
+### Installation
+```bash
+./install.sh            # Automated installation script (one-command setup)
+```
 
 ### Testing
 ```bash
@@ -24,6 +29,32 @@ ZTop v1.6 is a bash-based terminal application that creates a 5-pane tmux layout
 ```bash
 brew install tmux htop mactop ctop nethogs
 ```
+
+## Installation Script
+
+### Overview
+The `install.sh` script provides a fully automated installation experience that addresses Issue #3 by eliminating manual setup steps.
+
+### Features
+- **Automated Oh My Zsh detection**: Verifies Oh My Zsh is installed before proceeding
+- **Smart plugin installation**: Clones or updates the plugin in the correct directory
+- **Intelligent .zshrc modification**: Automatically adds 'ztop' to the plugins array
+  - Handles both single-line and multi-line plugins arrays
+  - Creates backup before modifications (`.zshrc.backup.TIMESTAMP`)
+  - Skips if ztop already present
+- **Dependency management**: Checks for required tools and offers to install via Homebrew
+- **Interactive prompts**: Guides user through optional steps (update, dependencies, shell reload)
+- **Colorized output**: Uses colored status messages (✓ success, ✗ error, ⚠ warning, ℹ info)
+
+### Technical Implementation
+- **Bash 3.x+ compatible**: Works on macOS default bash
+- **Error handling**: Uses `set -e` to exit on errors
+- **Safe .zshrc editing**: Uses `sed` with backup for reliable text modification
+- **Non-destructive**: Backs up configuration and checks existing installations
+
+### Usage Modes
+1. **Remote execution**: `curl -fsSL https://raw.githubusercontent.com/renato-umeton/ztop/main/install.sh | bash`
+2. **Local execution**: `git clone ... && bash install.sh`
 
 ## Architecture
 
