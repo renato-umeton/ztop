@@ -90,7 +90,7 @@ create_session() {
 # Launch monitoring tools in panes (parallel for faster loading)
 launch_tools() {
     local tools=("htop_cpu" "htop_mem_clean" "mactop" "ctop" "nethogs")
-    local commands=("htop -s PERCENT_CPU" "htop -s PERCENT_MEM" "mactop" "ctop" "while true; do sudo nethogs; sleep 1; done")
+    local commands=("sudo htop -s PERCENT_CPU" "sudo htop -s PERCENT_MEM" "sudo mactop" "ctop" "while true; do sudo nethogs; sleep 1; done")
     local titles=("htop (CPU)" "htop (MEM-clean)" "mactop" "ctop" "nethogs")
     
     # Launch all tools in parallel for faster startup

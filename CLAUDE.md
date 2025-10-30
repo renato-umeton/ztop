@@ -1,113 +1,118 @@
-# ZTop - Terminal System Monitor v1.2
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Project Overview
-ZTop v1.2 is an optimized terminal application that creates a 5-pane layout displaying system monitoring tools in a single tmux session. It features fast loading and warm start capabilities.
+ZTop v1.2 is a bash-based terminal application that creates a 5-pane tmux layout displaying system monitoring tools. It features performance optimizations including lazy loading, parallel tool execution, and warm start capabilities.
 
-### Layout (5 panes)
-- **Left Half**: htop CPU (top) and htop memory with clean interface (bottom)
-- **Right Half**: mactop (top), ctop (middle), and nethogs (bottom)
+## Commands
 
-## Implementation
+### Testing
+```bash
+./test_ztop.sh          # Run full test suite (22 tests)
+```
 
-### ZTop v1.2 (`ztop.sh`) - Performance Optimized Release
-- **Language**: Bash 3.x+ compatible
-- **UI Framework**: tmux for terminal multiplexing and pane management
-- **Process Management**: Parallel tool launching with background processes
-- **Layout**: Fixed 5-pane layout with optimized 50/50 split
-- **Session Management**: Auto-attach with instant warm start capability
-- **Performance Optimizations**:
-  - **Lazy loading**: Panes created first, then tools launched in parallel
-  - **Parallel execution**: All 5 tools start simultaneously
-  - **Warm start**: 'q' detaches (tools keep running), reattach instantly
-  - **Smart key bindings**: 'q' for detach/hibernate, 'k' for kill
-- **Special Features**: Clean htop interface + optimized key shortcuts
-- **Design Philosophy**: Performance-focused, production-ready with comprehensive testing
-- **Test Coverage**: 22 comprehensive tests covering all functionality including optimizations
+### Running
+```bash
+./ztop.sh               # Run ztop (creates or attaches to session)
+./ztop.sh --help        # Show help and available options
+./ztop.sh --list-tools  # Check which tools are installed
+./ztop.sh --kill        # Kill existing ztop session
+```
 
-## Key Files
-- `ztop.sh` - Main bash implementation using tmux for pane management
-- `test_ztop.sh` - Comprehensive test suite with layout and optimization verification
-- `README.md` - User documentation and installation instructions
-- `CLAUDE.md` - Detailed project documentation
-
-## Dependencies
-
-### Required Tools (No Fallbacks)
-- `tmux` - Terminal multiplexer
-- `htop` - Interactive process viewer
-- `mactop` - macOS activity monitor
-- `ctop` - Container monitoring tool
-- `nethogs` - Network traffic monitor by process (runs continuously with sudo)
-
-### Install All Dependencies
+### Dependencies Installation
 ```bash
 brew install tmux htop mactop ctop nethogs
 ```
 
-**Note**: All tools are required. The simplified version provides no fallback alternatives for missing tools.
+## Architecture
 
-## Usage
+### Core Design Pattern
+The application follows a **lazy loading with parallel execution** pattern:
+1. **Session management** (`manage_session`) - Auto-attach to existing session if available
+2. **Pane creation** (`create_session`) - Create empty 5-pane layout first
+3. **Parallel tool launch** (`launch_tools`) - All 5 tools start simultaneously using background processes (`&`)
+4. **Configuration** (`configure_tmux`) - Apply tmux settings and key bindings
 
-```bash
-chmod +x ztop.sh
-./ztop.sh
-```
+### Key Technical Details
 
-The script will:
-- Create a new tmux session named "ztop" with 5 optimally arranged panes
-- Auto-attach to existing session if already running (instant warm start)
-- Launch all monitoring tools in parallel for faster startup
-- Use clean htop interface with hidden graph meters
-- Configure optimized key bindings ('q' to detach, 'k' to kill)
-- Require all monitoring tools (no fallbacks)
+**Layout Structure** (ztop.sh:72-84):
+- 5 panes total: 2 left (panes 0,1), 3 right (panes 2,3,4)
+- Created using tmux split-window commands with specific targeting
+- Panes are sized for 50/50 horizontal split
 
-## Features
+**Warm Start Implementation** (ztop.sh:128-129):
+- 'q' key bound to `detach-client` (not kill) - tools keep running
+- 'k' key bound to `kill-session` - stops all tools
+- `manage_session` auto-attaches to existing session for instant restart
 
-### Performance Optimizations (v1.2)
-- **Lazy loading with parallel execution** - Panes created first, then all tools launched simultaneously
-- **Instant warm start** - Press 'q' to detach (tools keep running), reattach instantly next time
-- **Smart session management** - Automatically reuses existing session for zero-delay startup
-- **Optimized key bindings** - 'q' for detach/hibernate, 'k' for kill
+**Parallel Tool Launch** (ztop.sh:96-121):
+- Each tool launched in background subshell using `( ... ) &`
+- `wait` command ensures all tools start before attach
+- Special handling for htop_mem_clean: sends '#' keystroke after 2s to hide graph meters
 
-### Core Features
-- **Fixed 5-pane layout** with optimized 50/50 split (2 panes left, 3 panes right)
-- **Clean htop interface** with automatic graph meter hiding using `#` keystroke
-- **Streamlined dependency checking** - requires all tools, no alternatives
-- **Auto session management** - automatically attaches to existing or creates new
-- **Bash 3.x+ compatibility** for older and newer systems
-- **Production-ready codebase** - fully tested and documented
+**Tool Configuration** (ztop.sh:92-94):
+- Tools, commands, and titles stored in hardcoded arrays
+- No fallback alternatives - all tools required
+- htop, mactop, and nethogs run with sudo for full system access
+- nethogs wrapped in `while true` loop with sudo for continuous operation
+- ctop does not require sudo
 
-### Technical Implementation
-- **Parallel tool launching** - Background processes for simultaneous tool startup
-- **Hardcoded tool arrays** - eliminates complex configuration logic
-- **Direct tmux commands** - no abstraction layers or complex functions
-- **Automatic session detection** and reuse without user prompts
-- **Essential functions only** - removed all unnecessary complexity
-- **No fallback tools** - clean, predictable behavior
+### Testing Architecture
 
-### Optimizations from Issue #1
-Issue #1 requested three optimization strategies, all implemented:
-1. **Lazy load** ✓ - Panes created first, then filled in parallel using background processes
-2. **Warm start** ✓ - 'q' detaches instead of kills, enabling instant reattach
-3. **Smart key mapping** ✓ - 'q' for hibernate/detach, 'k' for kill
+**Test Suite Structure** (test_ztop.sh):
+- 16 core functionality tests + 6 optimization-specific tests = 22 total
+- Tests verify: script existence, help/options, session creation, layout structure, key bindings
+- Optimization tests check: lazy loading pattern, parallel execution, 'q' detach, 'k' kill, reattachment
 
-## Testing
+**Key Test Patterns**:
+- Layout verification (test_ztop.sh:234-295): Creates test session and validates pane positions using `tmux list-panes`
+- Key binding tests use `tmux list-keys` to verify bindings exist
+- Optimization tests verify code structure (function order) rather than runtime behavior
 
-### Test Suite
-- **22 comprehensive tests** covering all functionality including optimizations
-- **Layout verification** with automated tmux pane position testing
-- **Lazy loading tests** - Verify panes created before tools launched
-- **Parallel execution tests** - Verify tools launch simultaneously
-- **Key binding tests** - 'q' for detach, 'k' for kill
-- **Session reattachment tests** - Verify warm start capability
-- **Dependency checking** with tool requirements validation
-- **Integration tests** for end-to-end functionality verification
-- **htop_mem_clean functionality** testing with # keystroke validation
+## Important Implementation Notes
 
-### Running Tests
-```bash
-# Run all tests
-./test_ztop.sh
-```
+### Bash Compatibility
+- Written for Bash 3.x+ compatibility (macOS ships with Bash 3.2)
+- Avoids Bash 4+ features (associative arrays, etc.)
+- Uses simple arrays with parallel indexing pattern
 
-All tests pass successfully, ensuring reliable operation across different environments.
+### Tmux Session Management
+- Session name is hardcoded as "ztop"
+- Always check for existing session with `tmux has-session -t "ztop"`
+- Use `tmux attach-session -t "ztop"` at the end of main()
+
+### htop_mem_clean Feature
+- Uses same command as regular htop: `htop -s PERCENT_MEM`
+- Automatically sends '#' keystroke after 2-second delay to hide graph meters
+- Implemented in launch_tools using conditional check for "htop_mem_clean" tool name
+
+### Dependency Checking
+- All 5 tools are required: tmux, htop, mactop, ctop, nethogs
+- No fallback alternatives provided (simplified from earlier versions)
+- User can choose to continue if tools missing (prompted via read)
+
+### Sudo Requirements
+- htop, mactop, and nethogs require sudo for full system access
+- Users should configure passwordless sudo in /etc/sudoers using `visudo`
+- Example sudoers entries (use absolute paths):
+  ```
+  yourusername ALL=(ALL) NOPASSWD: /opt/homebrew/bin/htop
+  yourusername ALL=(ALL) NOPASSWD: /opt/homebrew/bin/mactop
+  yourusername ALL=(ALL) NOPASSWD: /opt/homebrew/bin/nethogs
+  ```
+- Without passwordless sudo, user will be prompted for password on each tool launch
+
+## Testing Requirements
+
+### When Making Changes
+1. All 22 tests must pass before committing
+2. Test both with and without existing tmux sessions
+3. Verify layout structure hasn't changed (panes 0,1 left, panes 2,3,4 right)
+4. If modifying optimizations, update corresponding tests
+
+### Adding New Tests
+- Follow existing test pattern: `test_function_name()`
+- Use `log_test`, `pass`, `fail`, `warn` functions for output
+- Clean up test sessions in teardown
+- Skip tests gracefully if dependencies unavailable (using `warn`)

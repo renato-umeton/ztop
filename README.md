@@ -32,6 +32,49 @@ brew install tmux htop mactop ctop nethogs
 
 **Important**: All tools are required. The simplified version does not provide fallback alternatives.
 
+### Configure Passwordless sudo for Monitoring Tools (Required)
+
+htop, mactop, and nethogs require root privileges to access all system information. To run ztop smoothly without password prompts, you must configure sudoers to allow these commands to run with sudo WITHOUT requiring a password.
+
+**Option 1: Allow your user to run monitoring tools without password (Recommended)**
+
+```bash
+sudo visudo
+```
+
+Add these lines at the end of the file (replace `yourusername` with your actual username):
+```
+# ZTop monitoring tools - allow passwordless sudo
+yourusername ALL=(ALL) NOPASSWD: /opt/homebrew/bin/htop
+yourusername ALL=(ALL) NOPASSWD: /opt/homebrew/bin/mactop
+yourusername ALL=(ALL) NOPASSWD: /opt/homebrew/bin/nethogs
+```
+
+The `NOPASSWD:` keyword means these commands will run with sudo WITHOUT asking for your password.
+
+**Option 2: Allow all admin users to run monitoring tools without password**
+
+```bash
+sudo visudo
+```
+
+Add these lines at the end of the file:
+```
+# ZTop monitoring tools - allow passwordless sudo for all admin users
+%admin ALL=(ALL) NOPASSWD: /opt/homebrew/bin/htop
+%admin ALL=(ALL) NOPASSWD: /opt/homebrew/bin/mactop
+%admin ALL=(ALL) NOPASSWD: /opt/homebrew/bin/nethogs
+```
+
+The `NOPASSWD:` keyword means these commands will run with sudo WITHOUT asking for a password.
+
+**Important Notes**:
+- Always use `visudo` to edit sudoers file (it validates syntax before saving)
+- The paths must be absolute (use `which htop`, `which mactop`, `which nethogs` to find correct paths)
+- Common paths: `/opt/homebrew/bin/` (Apple Silicon) or `/usr/local/bin/` (Intel Mac)
+- ctop does not require sudo and is not included
+- Save and exit (`:wq` in vi/vim)
+
 ## Installation & Usage
 
 1. Make the script executable:
