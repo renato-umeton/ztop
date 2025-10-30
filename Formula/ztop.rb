@@ -26,9 +26,42 @@ class Ztop < Formula
     bin.install_symlink bin/"ztop" => "zz"
   end
 
+  def post_install
+    # Automatically configure passwordless sudo for ztop tools
+    htop_path = "#{HOMEBREW_PREFIX}/bin/htop"
+    mactop_path = "#{HOMEBREW_PREFIX}/bin/mactop"
+    nethogs_path = "#{HOMEBREW_PREFIX}/bin/nethogs"
+
+    sudoers_line = "%admin ALL=(ALL) NOPASSWD: #{htop_path}, #{mactop_path}, #{nethogs_path}"
+
+    # Check if already configured
+    system "sudo", "grep", "-q", "NOPASSWD.*htop.*mactop.*nethogs", "/etc/sudoers", "/etc/sudoers.d/*"
+    return if $?.success?
+
+    ohai "Configuring passwordless sudo for htop, mactop, and nethogs..."
+
+    # Create temporary sudoers file
+    temp_file = "/tmp/ztop_sudoers_#{Process.pid}"
+    File.write(temp_file, "#{sudoers_line}\n")
+
+    # Validate syntax
+    if system "visudo", "-c", "-f", temp_file
+      # Append to sudoers
+      system "sudo", "sh", "-c", "echo '#{sudoers_line}' >> /etc/sudoers"
+      opoo "Sudoers configured successfully!"
+    else
+      opoo "Failed to validate sudoers syntax. Please configure manually."
+    end
+
+    # Clean up
+    File.delete(temp_file) if File.exist?(temp_file)
+  end
+
   def caveats
     <<~EOS
       ZTop has been installed!
+
+      Passwordless sudo has been automatically configured for htop, mactop, and nethogs.
 
       To use as a standalone command:
         ztop    # or
@@ -43,11 +76,6 @@ class Ztop < Formula
 
         3. Reload your shell:
            source ~/.zshrc
-
-      Configure passwordless sudo (required):
-        sudo visudo
-        # Add this line:
-        %admin ALL=(ALL) NOPASSWD: #{HOMEBREW_PREFIX}/bin/htop, #{HOMEBREW_PREFIX}/bin/mactop, #{HOMEBREW_PREFIX}/bin/nethogs
 
       For more information, visit: https://github.com/renato-umeton/ztop
     EOS
