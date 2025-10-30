@@ -6,6 +6,26 @@ All-in-one terminal system monitor with 5 panes: CPU, memory, Mac metrics, conta
 
 ## Quick Start
 
+### Option 1: Oh My Zsh Plugin (Recommended)
+
+```bash
+# Clone into Oh My Zsh plugins
+git clone https://github.com/renato-umeton/ztop.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/ztop
+
+# Add to ~/.zshrc plugins array
+plugins=(... ztop)
+
+# Reload shell
+source ~/.zshrc
+
+# Use the 'zz' alias
+zz
+```
+
+See [ohmyzsh-ztop/README.md](ohmyzsh-ztop/README.md) for details.
+
+### Option 2: Manual Installation
+
 ```bash
 # Install dependencies
 brew install tmux htop mactop ctop nethogs
